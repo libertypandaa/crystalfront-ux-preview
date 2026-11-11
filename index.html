@@ -202,11 +202,12 @@ body[data-preview=shop] .topbar,body[data-preview=mix] .topbar{grid-template-col
 body[data-preview=ordinary] .topbar{grid-template-columns:minmax(0,1fr) minmax(80px,.39fr)}
 body[data-preview=mixChain] .topbar{grid-template-columns:minmax(0,1.63fr) minmax(0,1fr) minmax(51px,.56fr)}
 body[data-preview=motion] .topbar{grid-template-columns:minmax(0,1fr) minmax(80px,.39fr)}
+body[data-preview=bomb] .topbar{grid-template-columns:minmax(0,.78fr) minmax(55px,.53fr) minmax(0,1.27fr)}
 </style></head>
 <body><main class="shell" aria-label="Crystal Front. Варианты UX-001">
   <header class="topbar">
     
-    <label class="sr" for="scene">Сцена</label><select id="scene"></select><select id="size" aria-label="Размер цепи"></select>
+    <label class="sr" for="scene">Сцена</label><select id="scene"></select><select id="size" aria-label="Размер цепи"></select><select id="bombStyle" aria-label="Анимация Бомбы" title="Анимация Бомбы" hidden></select>
     
   </header>
   <section id="stageSlot" aria-label="Сцена"><div id="stageFrame">
@@ -380,6 +381,7 @@ function demoFrames(scene,size,reduced){
  const bonus=isMix?'mix':scene==='ordinary'?null:scene;
  const transfer=bonus==='bomb'||bonus==='line'?{bonus,aim:idAt(...spec.aim),
   zone:plan.zone,roots:[...new Set(plan.starters.map(([root])=>root))]}:null;
+ const motion=transfer?timeTransfer(transfer,plan):null;
  push('start',650);
  if(bonus){
   push('bonusPick',280,{bonus});
@@ -387,8 +389,8 @@ function demoFrames(scene,size,reduced){
   if(isMix){
    push('mix',reduced?440:940,{bonus,ids:mixAreaIds,aim:'3-3',routes:permutation,newCells:cells,
     permutation:true,mixRoots:plan.roots});
-  }else{
-   push('bonus',reduced?350:bonus==='bomb'?560:460,{bonus,ids:plan.zone,aim:idAt(...spec.aim),targetType:spec.targetType,transfer});
+  }else if(!transfer){
+   push('bonus',reduced?350:460,{bonus,ids:plan.zone,aim:idAt(...spec.aim),targetType:spec.targetType});
   }
  }else{
   const [from,to]=[spec.from,spec.to].map(([row,col])=>({row,col}));
@@ -401,7 +403,7 @@ function demoFrames(scene,size,reduced){
   return frames;
  }
  if(!isColor){
-  push('cause',reduced?520:410+170*plan.maxDepth,{ids:plan.targets,chain:plan,bonus,transfer,mixHandoff:isMix});
+  push('cause',reduced?520:motion?.duration??410+170*plan.maxDepth,{ids:plan.targets,chain:plan,bonus,transfer,motion,mixHandoff:isMix});
  }
  push('break',reduced?280:ms.break,{ids:plan.targets,scoreBefore:state.scores,delta:0,bonus});
  const refill=demoRefill(cells,plan.targets),routes=routeRefill(cells,refill);
@@ -802,36 +804,6 @@ function handoffRoot(id,power){
 function goldPoint(x,y,power){
  return flare(x,y,20,'#f4a02b',.34*power)+flare(x,y,13,'#ffbb46',.79*power)+flare(x,y,7,goldCore,power);
 }
-function crossWave(frame,time,alpha,reduce){
- const {aim,zone,roots}=frame.transfer;
- const [row,col]=coords(aim),allowed=new Set(zone);
- const reach=Math.max(row,7-row,col,7-col)+.5;
- const distance=ease(time)*reach;
- const colors=new Map(frame.cells.map(cell=>[cell.id,cell.crystal]));
- let strokes='',arcs='';
- for(const [dr,dc] of directions){
-  let r=row,c=col;
-  for(let i=0;i<8;i++){
-   const from=idAt(r,c),to=idAt(r+dr,c+dc);
-   const outside=!allowed.has(to);
-   const progress=limit((distance-i)/(outside?.5:1));
-   if(progress<=0)break;
-   const [x,y]=xy(from),u=x+dc*(outside?50:100),v=y+dr*(outside?50:100);
-   const width=1+.60*i/Math.max(1,reach-.5);
-   strokes+='<g data-cross-edge="'+from+'>'+ (outside?'край':to)+'">'+
-    goldenZigzag(zigzag(x,y,u,v,progress,reduce?.64:time,i+1),width,alpha)+'</g>';
-   if(!outside&&!reduce)arcs+=surroundingArcs(from,to,progress,time,i,chainColor[colors.get(to)],.83*alpha);
-   if(outside)break;
-   r+=dr;c+=dc;
-  }
- }
- const power=id=>{
-  const [r,c]=coords(id),arrival=Math.abs(row-r)+Math.abs(col-c);
-  return limit((distance-arrival+.38)/.38);
- };
- return {art:'<g data-layer="cross-discharges">'+arcs+'</g><g data-layer="cross-gold">'+strokes+'</g>',
-  sources:roots.map(id=>[id,power(id)])};
-}
 function flame(x,y,u,v,progress,alpha){
  const dx=u-x,dy=v-y,length=Math.hypot(dx,dy);
  const point=(t,offset)=>[x+dx*t-dy/length*offset,y+dy*t+dx/length*offset].join(' ');
@@ -841,52 +813,177 @@ function flame(x,y,u,v,progress,alpha){
   ' Q '+point(middle,-width*spread*.78)+' '+point(trail,0)+' Z" fill="'+color+'" opacity="'+opacity+'"/>';
  return path(1.7,'#ff8438',.51*alpha)+path(1,'#ffbb54',.78*alpha)+path(.45,'#ffeba2',.88*alpha);
 }
-function blastWave(frame,time,alpha,reduce){
- const {aim,zone,roots}=frame.transfer;
- const [x,y]=xy(aim);
- const ignite=.25;
- const buildup=limit(time/ignite);
- let art='';
- if(time<ignite){
-  for(const [dr,dc] of directions){
-   const span=42-29*buildup;
-   art+=svgLine(x+dc*(span+11),y+dr*(span+11),x+dc*span,y+dr*span,'#ffc267',.55*buildup,4);
-  }
-  art+=flare(x,y,8+20*buildup,'#ff9c3f',.62*buildup)+flare(x,y,4+8*buildup,'#ffec9b',buildup);
+const bombNames=['Вспышки','Пламя','Ударная волна','Веер искр'];
+let bombStyleIndex=0;
+const hopMs=108;
+const crossCellMs=82;
+
+function timeTransfer(transfer,chain){
+ const [r,c]=coords(transfer.aim);
+ const arrival={};
+ for(const id of transfer.zone){
+  const [y,x]=coords(id);
+  const dr=Math.abs(y-r),dc=Math.abs(x-c);
+  arrival[id]=transfer.bonus==='line'?(dr+dc)*crossCellMs:
+   dr+dc===0?126:dr+dc===1?288:432;
  }
- const hitAt=id=>{
-  const [u,v]=xy(id);
-  return ignite+.27*Math.hypot(u-x,v-y)/142;
- };
- const flash=limit(1-(time-ignite)/.24);
- if(time>=ignite&&flash>0)art+='<g data-epicenter="'+aim+'">'+
-  flare(x,y,38+35*(1-flash),'#ff9c46',.86*flash*alpha)+flare(x,y,24+22*(1-flash),'#ffda78',.95*flash*alpha)+
-  flare(x,y,13+9*(1-flash),'#fff4b7',flash*alpha)+'</g>';
- if(time>=ignite)for(const id of zone){
-  const [u,v]=xy(id);
-  if(id!==aim&&!reduce){
-   const p=limit((time-ignite)/(hitAt(id)-ignite));
-   const trail=limit(1-(time-hitAt(id))/.23);
-   if(p>0&&trail>0)art+=flame(x,y,u,v,p,trail*alpha);
-  }
-  if(time<hitAt(id))continue;
-  const age=limit((time-hitAt(id))/.45),glow=(1-.83*age)*alpha;
-  art+='<g data-impact="'+id+'">'+flare(u,v,23+17*age,'#ff923a',.63*glow)+
-   flare(u,v,14+10*age,'#ffd382',.95*glow)+flare(u,v,8,'#fff1ae',.92*glow)+'</g>';
+ const frontEnd=transfer.bonus==='line'?Math.max(...Object.values(arrival))+crossCellMs/2:Math.max(...Object.values(arrival));
+ const first=new Map(),second=new Map(),continuations=new Map();
+ const key=(a,b)=>a+'>'+b;
+ for(const [root,a,b] of chain.starters){
+  first.set(key(root,a),{from:root,to:a,start:arrival[root],depth:1});
+  second.set(key(a,b),{from:a,to:b});
  }
- return {art,sources:roots.map(id=>[id,limit((time-hitAt(id))/.17)])};
+ for(const {id,parents} of [...chain.nodes,...chain.zoneLinks])for(const from of parents){
+  if(!first.has(key(from,id)))continuations.set(key(from,id),{from,to:id});
+ }
+ for(const [id,edge] of second)continuations.set(id,edge);
+ const edges=new Map(),reached=new Map();
+ function schedule(edge){
+  const id=key(edge.from,edge.to),previous=edges.get(id);
+  if(previous&&previous.start<=edge.start)return false;
+  const finish=edge.start+hopMs;
+  edges.set(id,{...edge,finish});
+  const cell=reached.get(edge.to);
+  if(!cell||finish<cell.time){reached.set(edge.to,{time:finish,depth:edge.depth});return true;}
+  return false;
+ }
+ for(const edge of first.values())schedule(edge);
+ let changed=true;
+ while(changed){
+  changed=false;
+  for(const edge of continuations.values()){
+   const source=reached.get(edge.from);
+   if(source&&schedule({...edge,start:source.time,depth:source.depth+1}))changed=true;
+  }
+ }
+ if(chain.nodes.some(node=>!reached.has(node.id)))throw new Error('A target has no arrival time');
+ const ordered=[...edges.values()].sort((a,b)=>a.start-b.start);
+ const lastEnd=Math.max(frontEnd,...ordered.map(edge=>edge.finish));
+ return {arrival,frontEnd,edges:ordered,hitAt:Object.fromEntries(reached),lastEnd,duration:lastEnd+170,
+  maxDepth:Math.max(1,...ordered.map(edge=>edge.depth))};
 }
-function carrier(frame,progress,fade,reduce){
- const {bonus,zone}=frame.transfer;
- const time=reduce?1:progress,alpha=1-fade;
- const {art,sources}=bonus==='bomb'?blastWave(frame,time,alpha,reduce):crossWave(frame,time,alpha,reduce);
- const mask=zone.map(id=>{
-  const [u,v]=xy(id);
-  return '<rect x="'+(u-50)+'" y="'+(v-50)+'" width="100" height="100"/>';
+
+function timedSignal(frame,q,reduce){
+ const {transfer,motion}=frame,elapsed=reduce?motion.lastEnd:q*frame.dur;
+ const mainProgress=limit(elapsed/motion.frontEnd);
+ const alpha=1-.72*limit((elapsed-motion.frontEnd)/200);
+ const {art,sources}=transfer.bonus==='line'?movingCross(frame,elapsed,alpha,reduce):bombArt(frame,elapsed,reduce);
+ const zoneMask=cellMask(transfer.zone),chainMask=cellMask(frame.chain.targets);
+ const palette=new Map(frame.cells.map(cell=>[cell.id,cell.crystal]));
+ const external=new Set(frame.chain.nodes.map(node=>node.id));
+ let arcs='',gold='',hits='';
+ for(const [index,edge] of motion.edges.entries()){
+  const progress=limit((elapsed-edge.start)/hopMs);
+  if(progress<=0)continue;
+  const [x,y]=xy(edge.from),[u,v]=xy(edge.to);
+  const strength=1+.9*(edge.depth-1)/Math.max(1,motion.maxDepth-1);
+  const age=limit((elapsed-edge.finish)/240),opacity=.96-.20*age;
+  const points=zigzag(x,y,u,v,progress,reduce?.64:elapsed/670,edge.depth);
+  gold+='<g data-branch="'+edge.from+'>'+edge.to+'" data-progress="'+progress+'" data-start="'+edge.start+'">'+
+   goldenZigzag(points,strength,opacity)+'</g>';
+  if(!reduce)arcs+=surroundingArcs(edge.from,edge.to,progress,elapsed/670,index,chainColor[palette.get(edge.to)],.88);
+ }
+ for(const id of external){
+  const {time}=motion.hitAt[id];
+  if(elapsed<time)continue;
+  const age=limit((elapsed-time)/170),[x,y]=xy(id);
+  hits+='<g data-cell="'+id+'" data-ignite="true">'+goldPoint(x,y,.95-.52*age)+'</g>';
+  if(!reduce)arcs+=sparksAt(x,y,age,0,chainColor[palette.get(id)],3);
+ }
+ return '<defs><clipPath id="transfer-zone">'+zoneMask+'</clipPath><clipPath id="chain-targets">'+chainMask+'</clipPath></defs>'+
+  '<g data-carrier="'+transfer.bonus+'" data-main-progress="'+mainProgress+'" clip-path="url(#transfer-zone)">'+art+sources+'</g>'+
+  '<g clip-path="url(#chain-targets)"><g data-layer="discharges">'+arcs+'</g><g data-layer="gold">'+gold+hits+'</g></g>';
+}
+function cellMask(ids){
+ return ids.map(id=>{
+  const [x,y]=xy(id);
+  return '<rect x="'+(x-50)+'" y="'+(y-50)+'" width="100" height="100"/>';
  }).join('');
- const points=frame.kind==='bonus'?sources.map(([id,power])=>power>0?handoffRoot(id,power):'').join(''):'';
- return '<defs><clipPath id="transfer-zone">'+mask+'</clipPath></defs><g data-carrier="'+bonus+'" clip-path="url(#transfer-zone)">'+
-  art+points+'</g>';
+}
+function movingCross(frame,time,alpha,reduce){
+ const {aim,zone,roots}=frame.transfer,{arrival,frontEnd}=frame.motion;
+ const [row,col]=coords(aim),allowed=new Set(zone);
+ const distance=Math.min(time,frontEnd)/crossCellMs;
+ const colors=new Map(frame.cells.map(cell=>[cell.id,cell.crystal]));
+ let strokes='',arcs='';
+ for(const [dr,dc] of directions){
+  let r=row,c=col;
+  for(let i=0;i<8;i++){
+   const from=idAt(r,c),to=idAt(r+dr,c+dc),outside=!allowed.has(to);
+   const progress=limit((distance-i)/(outside?.5:1));
+   if(progress<=0)break;
+   const [x,y]=xy(from),u=x+dc*(outside?50:100),v=y+dr*(outside?50:100);
+   strokes+='<g data-cross-edge="'+from+'>'+(outside?'край':to)+'" data-progress="'+progress+'">'+
+    goldenZigzag(zigzag(x,y,u,v,progress,reduce?.64:time/670,i+1),1+.60*i/(frontEnd/crossCellMs),alpha)+'</g>';
+   if(!outside&&!reduce)arcs+=surroundingArcs(from,to,progress,time/670,i,chainColor[colors.get(to)],.83*alpha);
+   if(outside)break;
+   r+=dr;c+=dc;
+  }
+ }
+ const sources=roots.filter(id=>time>=arrival[id]).map(id=>handoffRoot(id,.64+.36*(1-limit((time-arrival[id])/220)))).join('');
+ return {art:'<g data-layer="cross-discharges">'+arcs+'</g><g data-layer="cross-gold">'+strokes+'</g>',sources};
+}
+function along(x,y,u,v,t,offset){
+ const dx=u-x,dy=v-y,length=Math.hypot(dx,dy)||1;
+ return [x+dx*t-dy/length*offset,y+dy*t+dx/length*offset];
+}
+function pressure(x,y,u,v,p){
+ const head=along(x,y,u,v,p,0),tail=Math.max(0,p-.28);
+ const points=[along(x,y,u,v,tail,-27),along(x,y,u,v,p,-36),head,
+  along(x,y,u,v,p,36),along(x,y,u,v,tail,27)];
+ const panel='<polygon points="'+points.map(point=>point.join(',')).join(' ')+'" fill="#ff7b35" opacity=".35"/>';
+ return panel+poly([points[1],head,points[3]],'#ffca6d',9,.88)+poly([points[1],head,points[3]],'#fff0b5',3,.84);
+}
+function sparkFan(x,y,u,v,p,index){
+ let trails='';
+ for(let i=-2;i<=2;i++){
+  const speed=.67+.16*Math.abs(i),t=p*speed;
+  const offset=i*16*Math.sin(Math.PI*t)+(index%2?1:-1)*6*Math.sin(t*Math.PI*2);
+  const head=along(x,y,u,v,t,offset),tail=along(x,y,u,v,Math.max(0,t-.22),offset*.82);
+  trails+=poly([tail,head],i%2?'#ffae56':'#fff0a1',i===0?5:2.7,.85)+flare(...head,i===0?10:6,'#ffd582',.84);
+ }
+ trails+=flare(...along(x,y,u,v,p,0),9,'#fff1ae',.86);
+ return trails;
+}
+function bombArt(frame,time,reduce){
+ const {aim,zone,roots}=frame.transfer,{arrival}=frame.motion;
+ const [x,y]=xy(aim),chargeAt=arrival[aim],windup=limit(time/chargeAt);
+ let art='';
+ if(time<chargeAt){
+  const shrink=41-30*windup;
+  const colors=['#ffb25a','#ff8c40','#ffd283','#fff0ae'];
+  for(const [dr,dc] of directions)art+=svgLine(x+dc*(shrink+9),y+dr*(shrink+9),x+dc*shrink,y+dr*shrink,colors[bombStyleIndex],.7*windup,4);
+  art+=flare(x,y,8+18*windup,colors[bombStyleIndex],.65*windup);
+ }
+ const burst=time-chargeAt;
+ if(burst>=0&&burst<152)art+='<g data-epicenter="'+aim+'">'+
+  flare(x,y,37+burst*.14,'#ff8c42',.68*(1-burst/152))+
+  flare(x,y,18+burst*.13,'#fff0ae',.94*(1-burst/152))+'</g>';
+ for(const [index,id] of zone.entries()){
+  const [u,v]=xy(id),age=time-arrival[id];
+  if(id!==aim&&!reduce&&time>chargeAt&&age<0){
+   const progress=limit((time-chargeAt)/(arrival[id]-chargeAt));
+   let stroke='';
+   if(bombStyleIndex===0){
+    const head=along(x,y,u,v,progress,0);
+    stroke=flare(...head,8+9*progress,'#ffbf74',.8)+flare(...head,5,'#fff2b7',.94);
+   }else if(bombStyleIndex===1)stroke=flame(x,y,u,v,progress,1);
+   else if(bombStyleIndex===2)stroke=pressure(x,y,u,v,progress);
+   else stroke=sparkFan(x,y,u,v,progress,index);
+   art+='<g data-front-to="'+id+'" data-progress="'+progress+'">'+stroke+'</g>';
+  }
+  if(age<0)continue;
+  const a=limit(age/170),glow=.18+.82*(1-a);
+  let impact='';
+  if(bombStyleIndex===0)impact=flare(u,v,32+13*a,'#ffa653',.75*glow)+flare(u,v,19+8*a,'#fff0bb',.92*glow);
+  else if(bombStyleIndex===1)impact=flare(u,v,23+13*a,'#ff8b40',.62*glow)+flare(u,v,12+4*a,'#ffdd83',.85*glow);
+  else if(bombStyleIndex===2)impact=svgRect(u-26-9*a,v-26-9*a,52+18*a,52+18*a,'#ffad58',.73*glow)+flare(u,v,16,'#fff2ba',glow);
+  else for(const [dr,dc] of directions)impact+=flare(u+dc*(12+17*a),v+dr*(12+17*a),8+5*(1-a),'#ffd78d',.88*glow);
+  art+='<g data-impact="'+id+'">'+impact+'</g>';
+ }
+ const sources=roots.filter(id=>time>=arrival[id]).map(id=>handoffRoot(id,.64+.36*(1-limit((time-arrival[id])/220)))).join('');
+ return {art:'<g data-bomb-style="'+bombStyleIndex+'">'+art+'</g>',sources};
 }
 function mixSignal(frame,q,reduce){
  const a=reduce?1:q;
@@ -895,6 +992,7 @@ function mixSignal(frame,q,reduce){
  return '<g data-carrier="mix">'+rim+frame.mixRoots.map(id=>rootPower>0?handoffRoot(id,rootPower):'').join('')+'</g>';
 }
 function chainSignal(frame,q,reduce){
+ if(frame.motion)return timedSignal(frame,q,reduce);
  const {zone,nodes,targets,maxDepth}=frame.chain;
  const type=Object.fromEntries(frame.cells.map(cell=>[cell.id,cell.crystal]));
  const mask=targets.map(id=>{
@@ -934,7 +1032,7 @@ function chainSignal(frame,q,reduce){
    node.parents.join(',')+'"'+(settled&&!node.zoneLink?' data-ignite="true"':'')+'>'+paths+'</g>';
  }
  const fade=limit(q/.25);
- const residual=frame.transfer&&fade<1?carrier(frame,1,fade,reduce):frame.mixHandoff&&fade<1?
+ const residual=frame.mixHandoff&&fade<1?
   '<g data-carrier="mix">'+svgRect(107,107,486,486,'#e2d0ff',.72*(1-fade))+'</g>':'';
  return residual+'<defs><clipPath id="chain-targets">'+mask+'</clipPath></defs><g clip-path="url(#chain-targets)" data-origins="'+
   roots.join(',')+'"><g data-layer="discharges">'+arcs+'</g><g data-layer="gold">'+gold+'</g></g>';
@@ -943,7 +1041,6 @@ function chainSignal(frame,q,reduce){
 function nearestTarget(ids,anchor){return [...ids].sort((a,b)=>(anchor?gridDistance(a,anchor)-gridDistance(b,anchor):0)||idOrder(a,b))[0];}
 function signal(f,q,reduce) {
  if(f.chain)return chainSignal(f,q,reduce);
- if(f.transfer)return carrier(f,q,0,reduce);
  if(f.permutation)return mixSignal(f,q,reduce);
  let s='';
  const ids=f.ids??[];
@@ -971,7 +1068,9 @@ function render(f, reduce){
  const portion=f.sub?f.drawT/700:f.t/f.dur, q=limit(portion);
  const mixing=f.permutation&&!reduce&&q<.90;
  const moving=mixing||['refill','shift','spawn','swap','reject'].includes(f.kind);
- const ids=new Set(f.ids??[]),memory=new Set(f.memory??[]);
+ const visible=f.motion&&!reduce?f.ids.filter(id=>Math.min(f.motion.arrival[id]??Infinity,
+  f.motion.hitAt[id]?.time??Infinity)<=f.t):f.ids;
+ const ids=new Set(visible??[]),memory=new Set(f.memory??[]);
  const source=f.kind==='mix'&&(q>=(f.permutation?.90:.45)||reduce)?f.newCells:f.cells;
  const key=source.map(c=>c.crystal[0]+c.owner[0]).join('');
  if(tilesKey!==key){createTiles(source);tilesKey=key;}
@@ -1050,7 +1149,7 @@ function paint(t){
  }
  $('seek').value=cursor;
  $('time').textContent=(cursor/1000).toFixed(1)+' с · 1×';
- $('phaseName').textContent=(txt[f.overlay||f.kind]||txt.start)[0];
+ $('phaseName').textContent=f.motion?(f.bonus==='line'?'Крест и цепь':'Взрыв и цепь'):(txt[f.overlay||f.kind]||txt.start)[0];
 }
 function stop(){
  playing=false;cancelAnimationFrame(raf);
@@ -1112,7 +1211,8 @@ function refreshShopControls(){
 function renderPicker(){
  const scene=$('scene').value;
  const hasSizes=['ordinary','bomb','line','mix'].includes(scene);
- document.body.dataset.preview=scene==='shop'?'shop':hasSizes?'motion':'mix';
+ document.body.dataset.preview=scene==='shop'?'shop':scene==='bomb'?'bomb':hasSizes?'motion':'mix';
+ $('bombStyle').hidden=scene!=='bomb';
  $('size').hidden=!hasSizes;
  $('settings').hidden=scene==='shop';
  $('counts').hidden=scene==='shop';
@@ -1153,6 +1253,8 @@ shopView.onload=()=>{
  fitScene();refreshShopControls();
 };
 $('scene').onchange=changeScene;
+ for(const [index,name] of bombNames.entries())$('bombStyle').add(new Option(name,index));
+ $('bombStyle').onchange=()=>{bombStyleIndex=Number($('bombStyle').value);setup();};
 $('size').onchange=()=>{sizeIndex=Number($('size').value);renderPicker();setup();};
 $('shopReset').onclick=()=>shopView.contentWindow.shopPreview.reset();
 $('shopLow').onclick=()=>shopView.contentWindow.shopPreview.low();
