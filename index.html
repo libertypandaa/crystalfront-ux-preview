@@ -199,6 +199,8 @@ body[data-preview=shop] .topbar,body[data-preview=mix] .topbar{grid-template-col
 #motionActions #rewind{min-width:76px}
 #settings summary{height:42px}
 @media(max-width:355px){#counts{font-size:11px}#motionActions #toggle{min-width:85px}#motionActions #rewind{min-width:68px}}
+body[data-preview=ordinary] .topbar{grid-template-columns:minmax(0,1fr) minmax(80px,.39fr)}
+body[data-preview=mixChain] .topbar{grid-template-columns:minmax(0,1.63fr) minmax(0,1fr) minmax(51px,.56fr)}
 </style></head>
 <body><main class="shell" aria-label="Crystal Front. Варианты UX-001">
   <header class="topbar">
@@ -225,9 +227,9 @@ body[data-preview=shop] .topbar,body[data-preview=mix] .topbar{grid-template-col
   </footer>
 </main>
 <script>
-const data = {"mix":{"before":{"cells":[{"id":"0-0","row":0,"col":0,"crystal":"yellow","owner":"ai"},{"id":"0-1","row":0,"col":1,"crystal":"green","owner":"ai"},{"id":"0-2","row":0,"col":2,"crystal":"purple","owner":"ai"},{"id":"0-3","row":0,"col":3,"crystal":"purple","owner":"ai"},{"id":"0-4","row":0,"col":4,"crystal":"yellow","owner":"ai"},{"id":"0-5","row":0,"col":5,"crystal":"green","owner":"ai"},{"id":"0-6","row":0,"col":6,"crystal":"cyan","owner":"ai"},{"id":"0-7","row":0,"col":7,"crystal":"purple","owner":"ai"},{"id":"1-0","row":1,"col":0,"crystal":"yellow","owner":"ai"},{"id":"1-1","row":1,"col":1,"crystal":"purple","owner":"ai"},{"id":"1-2","row":1,"col":2,"crystal":"green","owner":"ai"},{"id":"1-3","row":1,"col":3,"crystal":"green","owner":"ai"},{"id":"1-4","row":1,"col":4,"crystal":"purple","owner":"ai"},{"id":"1-5","row":1,"col":5,"crystal":"cyan","owner":"ai"},{"id":"1-6","row":1,"col":6,"crystal":"yellow","owner":"ai"},{"id":"1-7","row":1,"col":7,"crystal":"cyan","owner":"ai"},{"id":"2-0","row":2,"col":0,"crystal":"cyan","owner":"ai"},{"id":"2-1","row":2,"col":1,"crystal":"green","owner":"ai"},{"id":"2-2","row":2,"col":2,"crystal":"purple","owner":"ai"},{"id":"2-3","row":2,"col":3,"crystal":"purple","owner":"ai"},{"id":"2-4","row":2,"col":4,"crystal":"yellow","owner":"ai"},{"id":"2-5","row":2,"col":5,"crystal":"yellow","owner":"ai"},{"id":"2-6","row":2,"col":6,"crystal":"green","owner":"ai"},{"id":"2-7","row":2,"col":7,"crystal":"yellow","owner":"ai"},{"id":"3-0","row":3,"col":0,"crystal":"purple","owner":"ai"},{"id":"3-1","row":3,"col":1,"crystal":"purple","owner":"ai"},{"id":"3-2","row":3,"col":2,"crystal":"green","owner":"ai"},{"id":"3-3","row":3,"col":3,"crystal":"green","owner":"ai"},{"id":"3-4","row":3,"col":4,"crystal":"cyan","owner":"ai"},{"id":"3-5","row":3,"col":5,"crystal":"cyan","owner":"ai"},{"id":"3-6","row":3,"col":6,"crystal":"yellow","owner":"ai"},{"id":"3-7","row":3,"col":7,"crystal":"green","owner":"ai"},{"id":"4-0","row":4,"col":0,"crystal":"cyan","owner":"player"},{"id":"4-1","row":4,"col":1,"crystal":"green","owner":"player"},{"id":"4-2","row":4,"col":2,"crystal":"purple","owner":"player"},{"id":"4-3","row":4,"col":3,"crystal":"green","owner":"player"},{"id":"4-4","row":4,"col":4,"crystal":"cyan","owner":"player"},{"id":"4-5","row":4,"col":5,"crystal":"cyan","owner":"player"},{"id":"4-6","row":4,"col":6,"crystal":"purple","owner":"player"},{"id":"4-7","row":4,"col":7,"crystal":"cyan","owner":"player"},{"id":"5-0","row":5,"col":0,"crystal":"cyan","owner":"player"},{"id":"5-1","row":5,"col":1,"crystal":"yellow","owner":"player"},{"id":"5-2","row":5,"col":2,"crystal":"green","owner":"player"},{"id":"5-3","row":5,"col":3,"crystal":"purple","owner":"player"},{"id":"5-4","row":5,"col":4,"crystal":"yellow","owner":"player"},{"id":"5-5","row":5,"col":5,"crystal":"green","owner":"player"},{"id":"5-6","row":5,"col":6,"crystal":"yellow","owner":"player"},{"id":"5-7","row":5,"col":7,"crystal":"purple","owner":"player"},{"id":"6-0","row":6,"col":0,"crystal":"green","owner":"player"},{"id":"6-1","row":6,"col":1,"crystal":"yellow","owner":"player"},{"id":"6-2","row":6,"col":2,"crystal":"cyan","owner":"player"},{"id":"6-3","row":6,"col":3,"crystal":"yellow","owner":"player"},{"id":"6-4","row":6,"col":4,"crystal":"cyan","owner":"player"},{"id":"6-5","row":6,"col":5,"crystal":"yellow","owner":"player"},{"id":"6-6","row":6,"col":6,"crystal":"green","owner":"player"},{"id":"6-7","row":6,"col":7,"crystal":"yellow","owner":"player"},{"id":"7-0","row":7,"col":0,"crystal":"green","owner":"player"},{"id":"7-1","row":7,"col":1,"crystal":"cyan","owner":"player"},{"id":"7-2","row":7,"col":2,"crystal":"green","owner":"player"},{"id":"7-3","row":7,"col":3,"crystal":"yellow","owner":"player"},{"id":"7-4","row":7,"col":4,"crystal":"purple","owner":"player"},{"id":"7-5","row":7,"col":5,"crystal":"cyan","owner":"player"},{"id":"7-6","row":7,"col":6,"crystal":"cyan","owner":"player"},{"id":"7-7","row":7,"col":7,"crystal":"yellow","owner":"player"}],"turn":"player","turnNumber":1,"scores":{"player":0,"ai":0},"profile":{"rating":1200,"rays":260},"bonuses":{"bomb":3,"line":3,"mix":2,"color":2},"selected":null,"selectedBonus":null,"settings":{"targetScore":999,"targetTerritory":80,"aiDifficulty":62,"victoryMode":"target-score"},"events":[{"type":"MatchStarted","message":"Break enemy cells. Push the front."}],"moveHistory":[],"winner":null,"legalMoves":18,"playableMoves":{"player":18,"ai":11}},"trace":[{"type":"mix","actor":"player","bonus":"mix","movableOwner":"ai","changedIds":["0-0","0-1","0-2","1-0","1-1","1-2","2-0","2-1","2-2"],"cells":[{"id":"0-0","row":0,"col":0,"crystal":"cyan","owner":"ai"},{"id":"0-1","row":0,"col":1,"crystal":"cyan","owner":"ai"},{"id":"0-2","row":0,"col":2,"crystal":"green","owner":"ai"},{"id":"0-3","row":0,"col":3,"crystal":"purple","owner":"ai"},{"id":"0-4","row":0,"col":4,"crystal":"yellow","owner":"ai"},{"id":"0-5","row":0,"col":5,"crystal":"green","owner":"ai"},{"id":"0-6","row":0,"col":6,"crystal":"cyan","owner":"ai"},{"id":"0-7","row":0,"col":7,"crystal":"purple","owner":"ai"},{"id":"1-0","row":1,"col":0,"crystal":"green","owner":"ai"},{"id":"1-1","row":1,"col":1,"crystal":"cyan","owner":"ai"},{"id":"1-2","row":1,"col":2,"crystal":"purple","owner":"ai"},{"id":"1-3","row":1,"col":3,"crystal":"green","owner":"ai"},{"id":"1-4","row":1,"col":4,"crystal":"purple","owner":"ai"},{"id":"1-5","row":1,"col":5,"crystal":"cyan","owner":"ai"},{"id":"1-6","row":1,"col":6,"crystal":"yellow","owner":"ai"},{"id":"1-7","row":1,"col":7,"crystal":"cyan","owner":"ai"},{"id":"2-0","row":2,"col":0,"crystal":"green","owner":"ai"},{"id":"2-1","row":2,"col":1,"crystal":"yellow","owner":"ai"},{"id":"2-2","row":2,"col":2,"crystal":"cyan","owner":"ai"},{"id":"2-3","row":2,"col":3,"crystal":"purple","owner":"ai"},{"id":"2-4","row":2,"col":4,"crystal":"yellow","owner":"ai"},{"id":"2-5","row":2,"col":5,"crystal":"yellow","owner":"ai"},{"id":"2-6","row":2,"col":6,"crystal":"green","owner":"ai"},{"id":"2-7","row":2,"col":7,"crystal":"yellow","owner":"ai"},{"id":"3-0","row":3,"col":0,"crystal":"purple","owner":"ai"},{"id":"3-1","row":3,"col":1,"crystal":"purple","owner":"ai"},{"id":"3-2","row":3,"col":2,"crystal":"green","owner":"ai"},{"id":"3-3","row":3,"col":3,"crystal":"green","owner":"ai"},{"id":"3-4","row":3,"col":4,"crystal":"cyan","owner":"ai"},{"id":"3-5","row":3,"col":5,"crystal":"cyan","owner":"ai"},{"id":"3-6","row":3,"col":6,"crystal":"yellow","owner":"ai"},{"id":"3-7","row":3,"col":7,"crystal":"green","owner":"ai"},{"id":"4-0","row":4,"col":0,"crystal":"cyan","owner":"player"},{"id":"4-1","row":4,"col":1,"crystal":"green","owner":"player"},{"id":"4-2","row":4,"col":2,"crystal":"purple","owner":"player"},{"id":"4-3","row":4,"col":3,"crystal":"green","owner":"player"},{"id":"4-4","row":4,"col":4,"crystal":"cyan","owner":"player"},{"id":"4-5","row":4,"col":5,"crystal":"cyan","owner":"player"},{"id":"4-6","row":4,"col":6,"crystal":"purple","owner":"player"},{"id":"4-7","row":4,"col":7,"crystal":"cyan","owner":"player"},{"id":"5-0","row":5,"col":0,"crystal":"cyan","owner":"player"},{"id":"5-1","row":5,"col":1,"crystal":"yellow","owner":"player"},{"id":"5-2","row":5,"col":2,"crystal":"green","owner":"player"},{"id":"5-3","row":5,"col":3,"crystal":"purple","owner":"player"},{"id":"5-4","row":5,"col":4,"crystal":"yellow","owner":"player"},{"id":"5-5","row":5,"col":5,"crystal":"green","owner":"player"},{"id":"5-6","row":5,"col":6,"crystal":"yellow","owner":"player"},{"id":"5-7","row":5,"col":7,"crystal":"purple","owner":"player"},{"id":"6-0","row":6,"col":0,"crystal":"green","owner":"player"},{"id":"6-1","row":6,"col":1,"crystal":"yellow","owner":"player"},{"id":"6-2","row":6,"col":2,"crystal":"cyan","owner":"player"},{"id":"6-3","row":6,"col":3,"crystal":"yellow","owner":"player"},{"id":"6-4","row":6,"col":4,"crystal":"cyan","owner":"player"},{"id":"6-5","row":6,"col":5,"crystal":"yellow","owner":"player"},{"id":"6-6","row":6,"col":6,"crystal":"green","owner":"player"},{"id":"6-7","row":6,"col":7,"crystal":"yellow","owner":"player"},{"id":"7-0","row":7,"col":0,"crystal":"green","owner":"player"},{"id":"7-1","row":7,"col":1,"crystal":"cyan","owner":"player"},{"id":"7-2","row":7,"col":2,"crystal":"green","owner":"player"},{"id":"7-3","row":7,"col":3,"crystal":"yellow","owner":"player"},{"id":"7-4","row":7,"col":4,"crystal":"purple","owner":"player"},{"id":"7-5","row":7,"col":5,"crystal":"cyan","owner":"player"},{"id":"7-6","row":7,"col":6,"crystal":"cyan","owner":"player"},{"id":"7-7","row":7,"col":7,"crystal":"yellow","owner":"player"}],"message":"MIX reshuffled the local field."},{"type":"turnEnd","actor":"player","cells":[{"id":"0-0","row":0,"col":0,"crystal":"cyan","owner":"ai"},{"id":"0-1","row":0,"col":1,"crystal":"cyan","owner":"ai"},{"id":"0-2","row":0,"col":2,"crystal":"green","owner":"ai"},{"id":"0-3","row":0,"col":3,"crystal":"purple","owner":"ai"},{"id":"0-4","row":0,"col":4,"crystal":"yellow","owner":"ai"},{"id":"0-5","row":0,"col":5,"crystal":"green","owner":"ai"},{"id":"0-6","row":0,"col":6,"crystal":"cyan","owner":"ai"},{"id":"0-7","row":0,"col":7,"crystal":"purple","owner":"ai"},{"id":"1-0","row":1,"col":0,"crystal":"green","owner":"ai"},{"id":"1-1","row":1,"col":1,"crystal":"cyan","owner":"ai"},{"id":"1-2","row":1,"col":2,"crystal":"purple","owner":"ai"},{"id":"1-3","row":1,"col":3,"crystal":"green","owner":"ai"},{"id":"1-4","row":1,"col":4,"crystal":"purple","owner":"ai"},{"id":"1-5","row":1,"col":5,"crystal":"cyan","owner":"ai"},{"id":"1-6","row":1,"col":6,"crystal":"yellow","owner":"ai"},{"id":"1-7","row":1,"col":7,"crystal":"cyan","owner":"ai"},{"id":"2-0","row":2,"col":0,"crystal":"green","owner":"ai"},{"id":"2-1","row":2,"col":1,"crystal":"yellow","owner":"ai"},{"id":"2-2","row":2,"col":2,"crystal":"cyan","owner":"ai"},{"id":"2-3","row":2,"col":3,"crystal":"purple","owner":"ai"},{"id":"2-4","row":2,"col":4,"crystal":"yellow","owner":"ai"},{"id":"2-5","row":2,"col":5,"crystal":"yellow","owner":"ai"},{"id":"2-6","row":2,"col":6,"crystal":"green","owner":"ai"},{"id":"2-7","row":2,"col":7,"crystal":"yellow","owner":"ai"},{"id":"3-0","row":3,"col":0,"crystal":"purple","owner":"ai"},{"id":"3-1","row":3,"col":1,"crystal":"purple","owner":"ai"},{"id":"3-2","row":3,"col":2,"crystal":"green","owner":"ai"},{"id":"3-3","row":3,"col":3,"crystal":"green","owner":"ai"},{"id":"3-4","row":3,"col":4,"crystal":"cyan","owner":"ai"},{"id":"3-5","row":3,"col":5,"crystal":"cyan","owner":"ai"},{"id":"3-6","row":3,"col":6,"crystal":"yellow","owner":"ai"},{"id":"3-7","row":3,"col":7,"crystal":"green","owner":"ai"},{"id":"4-0","row":4,"col":0,"crystal":"cyan","owner":"player"},{"id":"4-1","row":4,"col":1,"crystal":"green","owner":"player"},{"id":"4-2","row":4,"col":2,"crystal":"purple","owner":"player"},{"id":"4-3","row":4,"col":3,"crystal":"green","owner":"player"},{"id":"4-4","row":4,"col":4,"crystal":"cyan","owner":"player"},{"id":"4-5","row":4,"col":5,"crystal":"cyan","owner":"player"},{"id":"4-6","row":4,"col":6,"crystal":"purple","owner":"player"},{"id":"4-7","row":4,"col":7,"crystal":"cyan","owner":"player"},{"id":"5-0","row":5,"col":0,"crystal":"cyan","owner":"player"},{"id":"5-1","row":5,"col":1,"crystal":"yellow","owner":"player"},{"id":"5-2","row":5,"col":2,"crystal":"green","owner":"player"},{"id":"5-3","row":5,"col":3,"crystal":"purple","owner":"player"},{"id":"5-4","row":5,"col":4,"crystal":"yellow","owner":"player"},{"id":"5-5","row":5,"col":5,"crystal":"green","owner":"player"},{"id":"5-6","row":5,"col":6,"crystal":"yellow","owner":"player"},{"id":"5-7","row":5,"col":7,"crystal":"purple","owner":"player"},{"id":"6-0","row":6,"col":0,"crystal":"green","owner":"player"},{"id":"6-1","row":6,"col":1,"crystal":"yellow","owner":"player"},{"id":"6-2","row":6,"col":2,"crystal":"cyan","owner":"player"},{"id":"6-3","row":6,"col":3,"crystal":"yellow","owner":"player"},{"id":"6-4","row":6,"col":4,"crystal":"cyan","owner":"player"},{"id":"6-5","row":6,"col":5,"crystal":"yellow","owner":"player"},{"id":"6-6","row":6,"col":6,"crystal":"green","owner":"player"},{"id":"6-7","row":6,"col":7,"crystal":"yellow","owner":"player"},{"id":"7-0","row":7,"col":0,"crystal":"green","owner":"player"},{"id":"7-1","row":7,"col":1,"crystal":"cyan","owner":"player"},{"id":"7-2","row":7,"col":2,"crystal":"green","owner":"player"},{"id":"7-3","row":7,"col":3,"crystal":"yellow","owner":"player"},{"id":"7-4","row":7,"col":4,"crystal":"purple","owner":"player"},{"id":"7-5","row":7,"col":5,"crystal":"cyan","owner":"player"},{"id":"7-6","row":7,"col":6,"crystal":"cyan","owner":"player"},{"id":"7-7","row":7,"col":7,"crystal":"yellow","owner":"player"}],"message":"You gained 0."}],"after":{"cells":[{"id":"0-0","row":0,"col":0,"crystal":"cyan","owner":"ai"},{"id":"0-1","row":0,"col":1,"crystal":"cyan","owner":"ai"},{"id":"0-2","row":0,"col":2,"crystal":"green","owner":"ai"},{"id":"0-3","row":0,"col":3,"crystal":"purple","owner":"ai"},{"id":"0-4","row":0,"col":4,"crystal":"yellow","owner":"ai"},{"id":"0-5","row":0,"col":5,"crystal":"green","owner":"ai"},{"id":"0-6","row":0,"col":6,"crystal":"cyan","owner":"ai"},{"id":"0-7","row":0,"col":7,"crystal":"purple","owner":"ai"},{"id":"1-0","row":1,"col":0,"crystal":"green","owner":"ai"},{"id":"1-1","row":1,"col":1,"crystal":"cyan","owner":"ai"},{"id":"1-2","row":1,"col":2,"crystal":"purple","owner":"ai"},{"id":"1-3","row":1,"col":3,"crystal":"green","owner":"ai"},{"id":"1-4","row":1,"col":4,"crystal":"purple","owner":"ai"},{"id":"1-5","row":1,"col":5,"crystal":"cyan","owner":"ai"},{"id":"1-6","row":1,"col":6,"crystal":"yellow","owner":"ai"},{"id":"1-7","row":1,"col":7,"crystal":"cyan","owner":"ai"},{"id":"2-0","row":2,"col":0,"crystal":"green","owner":"ai"},{"id":"2-1","row":2,"col":1,"crystal":"yellow","owner":"ai"},{"id":"2-2","row":2,"col":2,"crystal":"cyan","owner":"ai"},{"id":"2-3","row":2,"col":3,"crystal":"purple","owner":"ai"},{"id":"2-4","row":2,"col":4,"crystal":"yellow","owner":"ai"},{"id":"2-5","row":2,"col":5,"crystal":"yellow","owner":"ai"},{"id":"2-6","row":2,"col":6,"crystal":"green","owner":"ai"},{"id":"2-7","row":2,"col":7,"crystal":"yellow","owner":"ai"},{"id":"3-0","row":3,"col":0,"crystal":"purple","owner":"ai"},{"id":"3-1","row":3,"col":1,"crystal":"purple","owner":"ai"},{"id":"3-2","row":3,"col":2,"crystal":"green","owner":"ai"},{"id":"3-3","row":3,"col":3,"crystal":"green","owner":"ai"},{"id":"3-4","row":3,"col":4,"crystal":"cyan","owner":"ai"},{"id":"3-5","row":3,"col":5,"crystal":"cyan","owner":"ai"},{"id":"3-6","row":3,"col":6,"crystal":"yellow","owner":"ai"},{"id":"3-7","row":3,"col":7,"crystal":"green","owner":"ai"},{"id":"4-0","row":4,"col":0,"crystal":"cyan","owner":"player"},{"id":"4-1","row":4,"col":1,"crystal":"green","owner":"player"},{"id":"4-2","row":4,"col":2,"crystal":"purple","owner":"player"},{"id":"4-3","row":4,"col":3,"crystal":"green","owner":"player"},{"id":"4-4","row":4,"col":4,"crystal":"cyan","owner":"player"},{"id":"4-5","row":4,"col":5,"crystal":"cyan","owner":"player"},{"id":"4-6","row":4,"col":6,"crystal":"purple","owner":"player"},{"id":"4-7","row":4,"col":7,"crystal":"cyan","owner":"player"},{"id":"5-0","row":5,"col":0,"crystal":"cyan","owner":"player"},{"id":"5-1","row":5,"col":1,"crystal":"yellow","owner":"player"},{"id":"5-2","row":5,"col":2,"crystal":"green","owner":"player"},{"id":"5-3","row":5,"col":3,"crystal":"purple","owner":"player"},{"id":"5-4","row":5,"col":4,"crystal":"yellow","owner":"player"},{"id":"5-5","row":5,"col":5,"crystal":"green","owner":"player"},{"id":"5-6","row":5,"col":6,"crystal":"yellow","owner":"player"},{"id":"5-7","row":5,"col":7,"crystal":"purple","owner":"player"},{"id":"6-0","row":6,"col":0,"crystal":"green","owner":"player"},{"id":"6-1","row":6,"col":1,"crystal":"yellow","owner":"player"},{"id":"6-2","row":6,"col":2,"crystal":"cyan","owner":"player"},{"id":"6-3","row":6,"col":3,"crystal":"yellow","owner":"player"},{"id":"6-4","row":6,"col":4,"crystal":"cyan","owner":"player"},{"id":"6-5","row":6,"col":5,"crystal":"yellow","owner":"player"},{"id":"6-6","row":6,"col":6,"crystal":"green","owner":"player"},{"id":"6-7","row":6,"col":7,"crystal":"yellow","owner":"player"},{"id":"7-0","row":7,"col":0,"crystal":"green","owner":"player"},{"id":"7-1","row":7,"col":1,"crystal":"cyan","owner":"player"},{"id":"7-2","row":7,"col":2,"crystal":"green","owner":"player"},{"id":"7-3","row":7,"col":3,"crystal":"yellow","owner":"player"},{"id":"7-4","row":7,"col":4,"crystal":"purple","owner":"player"},{"id":"7-5","row":7,"col":5,"crystal":"cyan","owner":"player"},{"id":"7-6","row":7,"col":6,"crystal":"cyan","owner":"player"},{"id":"7-7","row":7,"col":7,"crystal":"yellow","owner":"player"}],"turn":"ai","turnNumber":1,"scores":{"player":0,"ai":0},"profile":{"rating":1200,"rays":260},"bonuses":{"bomb":3,"line":3,"mix":1,"color":2},"selected":null,"selectedBonus":null,"settings":{"targetScore":999,"targetTerritory":80,"aiDifficulty":62,"victoryMode":"target-score"},"events":[{"type":"BonusUsed","message":"MIX changed 9 crystals."},{"type":"ScoreChanged","message":"You gained 0."}],"moveHistory":[{"id":1,"turnNumber":1,"actor":"player","movableOwner":"ai","from":null,"to":null,"bonus":{"type":"mix","targetIds":[],"changedIds":["0-0","0-1","0-2","1-0","1-1","1-2","2-0","2-1","2-2"]},"accepted":true,"scoreGain":0,"cascades":0,"matched":[],"capturedIds":[],"resultingScores":{"player":0,"ai":0},"aiDecision":null}],"winner":null,"legalMoves":11,"playableMoves":{"player":11,"ai":11}},"command":{"bonus":"mix","position":{"row":0,"col":0}}}};
+const data = {};
 let sizeIndex=0;
-const sceneNames={ordinary:'Тройка',bomb:'Бомба',line:'Линия',color:'Цвет',mix:'Перемешивание',shop:'Магазин'};
+const sceneNames={ordinary:'Тройка',bomb:'Бомба',line:'Линия',color:'Цвет',mix:'Перемешивание с цепью',mixQuiet:'Перемешивание без цепи',shop:'Магазин'};
 const styles=['Зигзаг','2 импульса','Дуга и искры','Плетёный луч'];
 const sizeNames=['Короткая','Средняя','Большая'];
 const directions=[[-1,0],[0,-1],[0,1],[1,0]];
@@ -341,7 +343,7 @@ function makeDemo(key,size){
   return cell.crystal===spec.targetType;
  }).map(cell=>cell.id);
  const origin=key==='ordinary'?idAt(...spec.to):null;
- const plan=chainPlan(cells,zone,spec.seed,origin);
+ const plan=key==='color'?{zone,targets:zone,nodes:[]}:chainPlan(cells,zone,spec.seed,origin);
  const before=cells.map(cell=>({...cell}));
  if(origin){
   const [a,b]=[spec.from,spec.to].map(([r,c])=>before[r*8+c]);
@@ -369,23 +371,38 @@ function demoRefill(cells,targets){
 }
 
 function demoFrames(scene,size,reduced){
- const {spec,cells,before,plan}=demoSet(scene)[size];
+ const isMix=scene==='mix'||scene==='mixQuiet';
+ const isColor=scene==='color';
+ const {spec,cells,before,plan,routes:permutation}=isMix?mixDemo(scene,scene==='mix'?size:0):demoSet(scene)[isColor?0:size];
  const state={cells:before,scores:{player:0,ai:0},bonuses:{...defaults},actor:'player',target:50};
  const frames=[];
  const push=(kind,duration,extra)=>frames.push(phase(kind,duration,state,extra));
- const bonus=scene==='ordinary'?null:scene;
+ const bonus=isMix?'mix':scene==='ordinary'?null:scene;
+ const transfer=bonus==='bomb'||bonus==='line'?{bonus,aim:idAt(...spec.aim),
+  zone:plan.zone,roots:[...new Set(plan.starters.map(([root])=>root))]}:null;
  push('start',650);
  if(bonus){
   push('bonusPick',280,{bonus});
   state.bonuses={...state.bonuses,[bonus]:state.bonuses[bonus]-1};
-  push('bonus',reduced?350:460,{bonus,ids:plan.zone,aim:idAt(...spec.aim),targetType:spec.targetType});
+  if(isMix){
+   push('mix',reduced?440:940,{bonus,ids:mixAreaIds,aim:'3-3',routes:permutation,newCells:cells,
+    permutation:true,mixRoots:plan.roots});
+  }else{
+   push('bonus',reduced?350:460,{bonus,ids:plan.zone,aim:idAt(...spec.aim),targetType:spec.targetType,transfer});
+  }
  }else{
   const [from,to]=[spec.from,spec.to].map(([row,col])=>({row,col}));
   push('selected',190,{ids:[idAt(...spec.from)]});
   if(!reduced)push('swap',ms.swap,{routes:pairRoutes({from,to},before),ids:[idAt(...spec.from),idAt(...spec.to)]});
  }
  state.cells=cells;
- push('cause',reduced?520:410+170*plan.maxDepth,{ids:plan.targets,chain:plan,bonus});
+ if(scene==='mixQuiet'){
+  push('end',660);
+  return frames;
+ }
+ if(!isColor){
+  push('cause',reduced?520:410+170*plan.maxDepth,{ids:plan.targets,chain:plan,bonus,transfer,mixHandoff:isMix});
+ }
  push('break',reduced?280:ms.break,{ids:plan.targets,scoreBefore:state.scores,delta:0,bonus});
  const refill=demoRefill(cells,plan.targets),routes=routeRefill(cells,refill);
  if(!reduced){
@@ -397,6 +414,85 @@ function demoFrames(scene,size,reduced){
  push('end',500);
  return frames;
 }
+const mixes={};
+const mixArea=allPositions.filter(([row,col])=>row>=1&&row<=5&&col>=1&&col<=5);
+const mixAreaIds=mixArea.map(([r,c])=>idAt(r,c));
+function straightMatches(cells){
+ const matches=new Set();
+ for(const vertical of [false,true])for(let fixed=0;fixed<8;fixed++){
+  const tile=i=>cells[vertical?i*8+fixed:fixed*8+i];
+  for(let start=0;start<8;){
+   let end=start+1;
+   while(end<8&&tile(start).crystal===tile(end).crystal)end++;
+   if(end-start>=3)for(let i=start;i<end;i++)matches.add(tile(i).id);
+   start=end;
+  }
+ }
+ return matches;
+}
+function mixChain(cells,matches){
+ const byId=new Map(cells.map(cell=>[cell.id,cell]));
+ const neighbors=id=>{
+  const {row,col,crystal}=byId.get(id);
+  return directions.map(([r,c])=>idAt(row+r,col+c)).filter(next=>byId.get(next)?.crystal===crystal);
+ };
+ const remaining=new Set([...matches].sort((a,b)=>gridDistance(a,'2-2')-gridDistance(b,'2-2')||idOrder(a,b)));
+ const reached=new Map(),roots=[];
+ while(remaining.size){
+  const root=remaining.values().next().value;
+  roots.push(root);
+  const queue=[{id:root,depth:0,parents:[]}];
+  remaining.delete(root);
+  for(const node of queue){
+   reached.set(node.id,node);
+   for(const next of neighbors(node.id)){
+    if(remaining.delete(next))queue.push({id:next,depth:node.depth+1,parents:[node.id]});
+   }
+  }
+ }
+ let frontier=[...reached.values()];
+ let depth=Math.max(0,...frontier.map(node=>node.depth))+1;
+ while(frontier.length){
+  const proposals=new Map();
+  for(const {id} of frontier)for(const next of neighbors(id)){
+   if(reached.has(next))continue;
+   if(!proposals.has(next))proposals.set(next,{id:next,depth,parents:[]});
+   proposals.get(next).parents.push(id);
+  }
+  for(const [id,node] of proposals)reached.set(id,node);
+  frontier=[...proposals.values()];
+  depth++;
+ }
+ return {zone:[],roots,origin:roots[0],nodes:[...reached.values()],zoneLinks:[],
+  targets:[...reached.keys()],maxDepth:Math.max(1,...[...reached.values()].map(node=>node.depth))};
+}
+function makeMix(scene,size){
+ const regular=['yellow','purple','cyan','green'];
+ const cells=demoSet('ordinary')[size].cells.map(cell=>({...cell,
+  crystal:scene==='mix'?cell.crystal:regular[(cell.row+2*cell.col)%regular.length]}));
+ const matches=straightMatches(cells);
+ if((matches.size>0)!==(scene==='mix'))throw new Error('Incorrect prepared mix result');
+ const order=mixArea.map(([r,c])=>r*8+c);
+ for(let seed=1;seed<=500;seed++){
+  let rng=seed;
+  const sources=[...order];
+  for(let i=sources.length-1;i>0;i--){
+   rng=(Math.imul(rng,1664525)+1013904223)>>>0;
+   const j=rng%(i+1);
+   [sources[i],sources[j]]=[sources[j],sources[i]];
+  }
+  const before=cells.map(cell=>({...cell}));
+  order.forEach((to,i)=>{before[sources[i]].crystal=cells[to].crystal;});
+  if(straightMatches(before).size)continue;
+  const routes=order.map((to,i)=>({from:before[sources[i]],to:cells[to],tile:before[sources[i]]}));
+  return {cells,before,routes,plan:mixChain(cells,matches),matches:[...matches]};
+ }
+ throw new Error('No stable pre-mix fixture');
+}
+function mixDemo(scene,size){
+ const key=scene+'-'+size;
+ return mixes[key]??=makeMix(scene,size);
+}
 
 const labels=sceneNames;
 const human = {bomb:'Бомба',line:'Линия',mix:'Перемешивание',color:'Цвет'};
@@ -407,8 +503,8 @@ const txt = {
  start:['Исходное поле','Счёт, владение и кристаллы до действия.'], selected:['Выбран кристалл','Один короткий отклик и постоянная тонкая рамка.'], replaced:['Выбор перенесён','При выборе другой допустимой клетки рамка переходит на неё.'], deselected:['Выбор снят','В исходном сценарии он снимается недопустимой целью или переключением на бонус.'],
  swap:['Перестановка','Два кристалла проходят между своими реальными клетками.'], cause:['Цепная реакция','Свет проходит по совпавшим линиям. Остальное поле остаётся читаемым.'], wave:['Дополнительная статическая волна','Первая группа остаётся в тонких контурах. Кристаллы стоят на месте.'],
  break:['Общее удаление','Одна группа уходит. На пустом кадре меняется счёт.'], refill:['Одновременное пополнение','Старые двигаются к своим местам, новые уже входят с края.'], shift:['Сдвиг старых','Видны только маршруты сохранившихся кристаллов.'], spawn:['Вход новых','Старые остановились. Новые входят с нужного края.'], land:['Прибытие и захват','Подложки показывают итог. Короткая рамка есть только у новых кристаллов.'],
- end:['Передача хода','Статус называет следующую сторону. Поле уже остановилось.'], noMoves:['У ИИ нет хода','Тестовое поле без допустимого обмена. В этом режиме ядро возвращает очередь игроку.'], win:['Завершение партии','Действует существующий экран результата. Соперник больше не делает ход.'],
- bonus:['Область бонуса','Короткое движение показывает фактический рисунок целей.'], mix:['Перемешивание','Фактические цвета меняются внутри своих клеток. Если ядро нашло совпадение, оно показывается следом.'],
+ end:['Конец показа','Статус называет следующую сторону. Поле уже остановилось.'], noMoves:['У ИИ нет хода','Тестовое поле без допустимого обмена. В этом режиме ядро возвращает очередь игроку.'], win:['Завершение партии','Действует существующий экран результата. Соперник больше не делает ход.'],
+ bonus:['Область бонуса','Короткое движение показывает фактический рисунок целей.'], mix:['Перемешивание','Кристаллы меняются местами. После остановки совпадение запускает цепь.'],
  reject:['Обмен без совпадения','Пара возвращается по обратному пути. Счёт и очередь прежние.'], invalid:['Недопустимая цель','Только локальный отказ у цели. Кристаллы остаются на местах.'], bonusPick:['Выбор бонуса','Штатная карточка выделяется, запас меняется при применении.'], pause:['Пауза','Траектория и время остановлены на одном кадре.'], bg:['Игра в фоне','Видимое движение остановлено. После возвращения продолжается оставшийся участок.']
 };
 const clone = x => ({...x});
@@ -505,7 +601,7 @@ function turnFrames(item, reduced, refillStyle) {
  return arr;
 }
 function make(key,reduced,refillStyle='separate') {
- if(specs[key])return demoFrames(key,sizeIndex,reduced);
+ if(specs[key]||key==='mix'||key==='mixQuiet')return demoFrames(key,sizeIndex,reduced);
  const initial=(d,extra)=>phase('start',d,{...data.ordinary.before,actor:'player',target:999},extra);
  if(key==='selection')return [initial(650),initial(950,{kind:'selected',ids:['0-4']}),initial(950,{kind:'replaced',ids:['1-6']}),initial(950,{kind:'deselected'}),initial(950,{kind:'bonusPick',bonus:'bomb'}),initial(650,{kind:'deselected'})];
  if(key==='ai')return [initial(650),...turnFrames(data.ordinary,reduced,refillStyle),...turnFrames(data.ai,reduced,refillStyle),initial(700,{...phase('end',700,{...data.ai.after,actor:'player',target:999})})];
@@ -707,6 +803,51 @@ function beamPaths(from,to,p,style,time,depth){
   return point(t,side*10*Math.sin(t*3*Math.PI)*Math.sin(Math.PI*t));
  }));
 }
+function handoffRoot(id,power){
+ const [x,y]=xy(id);
+ return '<g data-source="'+id+'" data-power="'+power+'">'+goldPoint(x,y,power)+
+  svgCircle(x,y,13+6*power,'#ffca65',power,3)+'</g>';
+}
+function carrier(frame,progress,fade,reduce){
+ const {bonus,aim,zone,roots}=frame.transfer;
+ const [x,y]=xy(aim);
+ const alpha=1-fade;
+ const charge=reduce?1:ease(progress);
+ const mask=zone.map(id=>{
+  const [u,v]=xy(id);
+  return '<rect x="'+(u-50)+'" y="'+(v-50)+'" width="100" height="100"/>';
+ }).join('');
+ let wave='';
+ if(bonus==='bomb'){
+  const radius=16+143*charge;
+  wave=svgCircle(x,y,radius,'#ffaf49',.25*alpha,21)+svgCircle(x,y,radius,'#ffd487',.86*alpha,8)
+   +svgCircle(x,y,radius,'#fff1ae',.9*alpha,3.6)+svgCircle(x,y,Math.max(9,radius-22),'#ffc461',.46*alpha,4);
+ }else{
+  for(const [tx,ty] of [[0,y],[800,y],[x,0],[x,800]]){
+   const ex=x+(tx-x)*charge,ey=y+(ty-y)*charge;
+   wave+=svgLine(x,y,ex,ey,'#ffb52e',.34*alpha,20)+svgLine(x,y,ex,ey,'#ffce63',.68*alpha,10)
+    +svgLine(x,y,ex,ey,'#fff1ae',.92*alpha,4.2);
+  }
+ }
+ const sourcePower=id=>{
+  const [u,v]=xy(id),distance=Math.hypot(u-x,v-y);
+  const reach=u<x?x:u>x?800-x:v<y?y:800-y;
+  const arrive=bonus==='bomb'?Math.max(0,(distance-16)/143):distance/reach;
+  return limit((charge-arrive+.13)/.13);
+ };
+ const points=frame.kind==='bonus'?roots.map(id=>{
+  const power=sourcePower(id);
+  return power>0?handoffRoot(id,power):'';
+ }).join(''):'';
+ return '<defs><clipPath id="transfer-zone">'+mask+'</clipPath></defs><g data-carrier="'+bonus+'" clip-path="url(#transfer-zone)">'+
+  wave+points+'</g>';
+}
+function mixSignal(frame,q,reduce){
+ const a=reduce?1:q;
+ const rootPower=limit((a-.90)/.10);
+ const rim=svgRect(107,107,486,486,'#e2d0ff',.72*(frame.mixRoots.length?1:1-rootPower));
+ return '<g data-carrier="mix">'+rim+frame.mixRoots.map(id=>rootPower>0?handoffRoot(id,rootPower):'').join('')+'</g>';
+}
 function chainSignal(frame,q,reduce){
  const {zone,nodes,targets,maxDepth}=frame.chain;
  const type=Object.fromEntries(frame.cells.map(cell=>[cell.id,cell.crystal]));
@@ -715,15 +856,16 @@ function chainSignal(frame,q,reduce){
   return '<rect x="'+(x-50)+'" y="'+(y-50)+'" width="100" height="100"/>';
  }).join('');
  let gold='',arcs='';
+ const style=frame.bonus?variant:0;
  const step=.75/maxDepth;
- const roots=zone.length?[...new Set(frame.chain.starters.map(([root])=>root))]:[frame.chain.origin];
+ const roots=frame.chain.roots??(zone.length?[...new Set(frame.chain.starters.map(([root])=>root))]:[frame.chain.origin]);
  for(const root of roots){
-  const [x,y]=xy(root),power=reduce?.8:Math.max(.55,1-q*1.2);
-  gold+=goldPoint(x,y,power)+svgCircle(x,y,13+6*power,'#ffca65',power,3);
+  const power=frame.transfer||frame.mixHandoff?Math.max(.55,1-q*1.2):reduce?.8:Math.max(.55,1-q*1.2);
+  gold+=handoffRoot(root,power);
  }
  for(const [index,node] of [...nodes,...frame.chain.zoneLinks].entries()){
   if(!node.parents.length)continue;
-  const start=.05+(node.depth-1)*step;
+  const start=(frame.transfer||frame.mixHandoff?0:.05)+(node.depth-1)*step;
   const progress=reduce?1:limit((q-start)/step);
   if(progress<=0)continue;
   const settled=progress===1;
@@ -733,33 +875,38 @@ function chainSignal(frame,q,reduce){
   const [x,y]=xy(node.id);
   let paths='';
   for(const parent of node.parents){
-   const curves=beamPaths(parent,node.id,progress,variant,reduce?.64:q,node.depth);
-   const alpha=variant===0||variant===3?.96-.20*age:1-.59*age;
+   const curves=beamPaths(parent,node.id,progress,style,reduce?.64:q,node.depth);
+   const alpha=style===0||style===3?.96-.20*age:1-.59*age;
    const twin=curves.length===2;
    const core=(twin?3.15:4.6)*strength;
    for(const curve of curves){
     paths+=poly(curve,'#ef9d26',(twin?12:15)*strength,(twin?.2:.28)*alpha)+poly(curve,'#ffb52e',(twin?7:9)*strength,.7*alpha)
      +poly(curve,goldCore,core,alpha);
    }
-   if(!reduce)arcs+=surroundingArcs(parent,node.id,progress,q+variant*.13,index,color,Math.min(1,.72+.08*node.depth));
+   if(!reduce)arcs+=surroundingArcs(parent,node.id,progress,q+style*.13,index,color,Math.min(1,.72+.08*node.depth));
   }
   if(settled&&!node.zoneLink){
    paths+=goldPoint(x,y,Math.min(1,(.93-age*.51)*strength));
-   if(variant===1)paths+=svgCircle(x,y,8+18*age,'#ffcf69',.85*(1-age),3.9);
-   if(variant===2)paths+=svgCircle(x,y,9+15*age,'#ffd476',.81*(1-age),3);
-   if(!reduce)arcs+=sparksAt(x,y,age,index,color,variant===2?6:3);
+   if(style===1)paths+=svgCircle(x,y,8+18*age,'#ffcf69',.85*(1-age),3.9);
+   if(style===2)paths+=svgCircle(x,y,9+15*age,'#ffd476',.81*(1-age),3);
+   if(!reduce)arcs+=sparksAt(x,y,age,index,color,style===2?6:3);
   }
   const target=node.zoneLink?'data-zone-link="'+node.parents[0]+'>'+node.id+'"':'data-cell="'+node.id+'"';
   gold+='<g '+target+' data-depth="'+node.depth+'" data-progress="'+progress+'" data-parents="'+
    node.parents.join(',')+'"'+(settled&&!node.zoneLink?' data-ignite="true"':'')+'>'+paths+'</g>';
  }
- return '<defs><clipPath id="chain-targets">'+mask+'</clipPath></defs><g clip-path="url(#chain-targets)" data-origins="'+
+ const fade=limit(q/.25);
+ const residual=frame.transfer&&fade<1?carrier(frame,1,fade,reduce):frame.mixHandoff&&fade<1?
+  '<g data-carrier="mix">'+svgRect(107,107,486,486,'#e2d0ff',.72*(1-fade))+'</g>':'';
+ return residual+'<defs><clipPath id="chain-targets">'+mask+'</clipPath></defs><g clip-path="url(#chain-targets)" data-origins="'+
   roots.join(',')+'"><g data-layer="discharges">'+arcs+'</g><g data-layer="gold">'+gold+'</g></g>';
 }
 
 function nearestTarget(ids,anchor){return [...ids].sort((a,b)=>(anchor?gridDistance(a,anchor)-gridDistance(b,anchor):0)||idOrder(a,b))[0];}
 function signal(f,q,reduce) {
  if(f.chain)return chainSignal(f,q,reduce);
+ if(f.transfer)return carrier(f,q,0,reduce);
+ if(f.permutation)return mixSignal(f,q,reduce);
  let s='';
  const ids=f.ids??[];
  const squares=ids.map(id=>{const [x,y]=xy(id);return '<rect x="'+(x-50)+'" y="'+(y-50)+'" width="100" height="100"/>';}).join('');
@@ -823,13 +970,14 @@ function signal(f,q,reduce) {
 function render(f, reduce){
  document.body.classList.toggle('reduce-ui-motion',reduce);
  board.dataset.phase=f.kind;
- const moving=['refill','shift','spawn','swap','reject'].includes(f.kind);
  const portion=f.sub?f.drawT/700:f.t/f.dur, q=limit(portion);
+ const mixing=f.permutation&&!reduce&&q<.90;
+ const moving=mixing||['refill','shift','spawn','swap','reject'].includes(f.kind);
  const ids=new Set(f.ids??[]),memory=new Set(f.memory??[]);
- const source=f.kind==='mix'&&(q>=.45||reduce)?f.newCells:f.cells;
+ const source=f.kind==='mix'&&(q>=(f.permutation?.90:.45)||reduce)?f.newCells:f.cells;
  const key=source.map(c=>c.crystal[0]+c.owner[0]).join('');
  if(tilesKey!==key){createTiles(source);tilesKey=key;}
- const routes=f.routes??[];
+ const routes=f.permutation?(mixing?f.routes.filter(route=>!eq(route.from,route.to)):[]):f.routes??[];
  const ghosts=new Set(routes.filter(x=>x.from.row>=0&&x.from.row<8).map(x=>idOf(x.from)));
  const empty=new Set(f.empty??[]);
  const broken=f.kind==='break'&&(reduce||f.t>=380);
@@ -848,7 +996,7 @@ function render(f, reduce){
   el.classList.toggle('empty',empty.has(id)||(hit&&broken));
   let style='';
   if(!reduce&&hit&&['selected','replaced'].includes(f.kind))style='transform:translateY('+(-2*Math.sin(Math.PI*limit(f.t/160)))+'px)';
-  if(!reduce&&hit&&f.kind==='mix')style='transform:scaleX('+Math.max(.08,Math.abs(1-2*q))+');filter:brightness(1.15)';
+  if(!reduce&&hit&&f.kind==='mix'&&!f.permutation)style='transform:scaleX('+Math.max(.08,Math.abs(1-2*q))+');filter:brightness(1.15)';
   if(!reduce&&hit&&f.kind==='land')style='transform:scaleY('+(1-.07*Math.sin(Math.PI*limit(q*2.2)))+')';
   if(!reduce&&hit&&f.kind==='break'){
    const v=limit(f.t/380);
@@ -862,8 +1010,8 @@ function render(f, reduce){
   gem.style.cssText=style;
  }
  const movingHTML=reduce?'':routes.map(({from,to,tile,born})=>{
-   const v=ease(q),r=from.row+(to.row-from.row)*v,c=from.col+(to.col-from.col)*v;
-   const swap=f.kind==='swap'||f.kind==='reject';
+   const v=ease(mixing?q/.90:q),r=from.row+(to.row-from.row)*v,c=from.col+(to.col-from.col)*v;
+   const swap=mixing||f.kind==='swap'||f.kind==='reject';
    const arc=swap ? ((from.row<to.row||from.col<to.col)?1:-1)*Math.sin(Math.PI*v)*.085 : 0;
    const hor=from.row===to.row;
    return '<div class="piece '+(swap?'swap ':'')+'owner-'+tile.owner+' crystal-'+tile.crystal+'" data-origin="'+(born?'spawn':'existing')+'" data-destination="'+idOf(to)+'" style="'+position(r+(hor?arc:0),c+(hor?0:arc))+'">'+crystal(tile)+'</div>';
@@ -966,25 +1114,30 @@ function refreshShopControls(){
 }
 function renderPicker(){
  const scene=$('scene').value;
- const demo=specs[scene];
+ const hasSizes=['ordinary','bomb','line','mix'].includes(scene);
+ const chooseBeam=scene==='bomb'||scene==='line'||scene==='mix';
+ document.body.dataset.preview=scene==='shop'?'shop':!hasSizes?'mix':scene==='ordinary'?'ordinary':scene==='mix'?'mixChain':'motion';
  $('variant').replaceChildren(...(scene==='shop'?shopNames:styles).map((name,index)=>new Option(name,index)));
  $('variant').value=scene==='shop'?'0':String(variant);
- $('variant').hidden=!demo;
- $('size').hidden=!demo;
+ $('variant').hidden=!chooseBeam;
+ $('size').hidden=!hasSizes;
  $('settings').hidden=scene==='shop';
  $('counts').hidden=scene==='shop';
- if(demo){
-  const variants=demoSet(scene);
+ if(hasSizes){
+  const variants=scene==='mix'?sizeNames.map((_,index)=>mixDemo(scene,index)):demoSet(scene);
   $('size').replaceChildren(...variants.map(({plan},index)=>{
    const option=new Option((plan.targets.length-plan.zone.length)+' кл.',index);
    option.title=sizeNames[index]+' цепь';
    return option;
   }));
   $('size').value=String(sizeIndex);
-  const {plan}=variants[sizeIndex];
-  const participants=plan.targets.length-plan.zone.length;
-  $('counts').textContent=plan.zone.length?'Цепь '+participants+' · Зона '+plan.zone.length+' · Всего '+plan.targets.length:'Кристаллов в цепи '+participants;
- }else if(scene==='mix')$('counts').textContent='Перемешивание участка';
+  const {plan}=variants[sizeIndex],participants=plan.targets.length-plan.zone.length;
+  $('counts').textContent=plan.zone.length?'Цепь '+participants+' · Зона '+plan.zone.length+' · Всего '+plan.targets.length:
+   (scene==='ordinary'?'Зигзаг · Цепь ':'Кристаллов в цепи ')+participants;
+ }else if(scene==='color'){
+  const amount=demoSet('color')[0].plan.zone.length;
+  $('counts').textContent='Только выбранный цвет · '+amount+' кл.';
+ }else if(scene==='mixQuiet')$('counts').textContent='Перестановка · без совпадений';
 }
 function changeScene(){
  const isShop=$('scene').value==='shop';
