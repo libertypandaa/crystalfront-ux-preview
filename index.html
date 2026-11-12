@@ -376,7 +376,7 @@ const fadeMs=230;
 const mixStop=.90;
 
 function chainWindow(chain,mix){
- return {offset:mix?0:.05,step:.75/chain.maxDepth};
+ return {offset:mix?0:.025,step:.75/chain.maxDepth};
 }
 function firstHits(plan,{motion,isColor,isMix,reduced,effectDuration,mixDuration}){
  const hits={};
@@ -414,9 +414,10 @@ function demoFrames(scene,size,reduced){
   zone:plan.zone,roots:[...new Set(plan.starters.map(([root])=>root))]}:null;
  const motion=transfer?timeTransfer(transfer,plan):null;
  const mixDuration=reduced?440:940;
- const effectDuration=isColor?(reduced?350:460):reduced?520:motion?.duration??410+170*plan.maxDepth;
+ const effectDuration=isColor?(reduced?350:460):reduced?520:motion?.duration??2*(410+170*plan.maxDepth);
  const localHits=scene==='mixQuiet'?{}:firstHits(plan,{motion,isColor,isMix,reduced,effectDuration,mixDuration});
- const activeDuration=removalEnd(localHits,effectDuration,reduced);
+ const effectEnd=!motion&&!isColor&&!reduced?(chainWindow(plan,isMix).offset+.75)*effectDuration+trailMs:effectDuration;
+ const activeDuration=removalEnd(localHits,effectEnd,reduced);
  push('start',650);
  if(bonus){
   push('bonusPick',280,{bonus});
@@ -849,8 +850,8 @@ function flame(x,y,u,v,progress,alpha){
 }
 const bombNames=['Вспышки','Пламя','Ударная волна','Веер искр'];
 let bombStyleIndex=0;
-const hopMs=108;
-const crossCellMs=82;
+const hopMs=216;
+const crossCellMs=164;
 
 function timeTransfer(transfer,chain){
  const [r,c]=coords(transfer.aim);
@@ -859,7 +860,7 @@ function timeTransfer(transfer,chain){
   const [y,x]=coords(id);
   const dr=Math.abs(y-r),dc=Math.abs(x-c);
   arrival[id]=transfer.bonus==='line'?(dr+dc)*crossCellMs:
-   dr+dc===0?126:dr+dc===1?288:432;
+   dr+dc===0?252:dr+dc===1?576:864;
  }
  const frontEnd=transfer.bonus==='line'?Math.max(...Object.values(arrival))+crossCellMs/2:Math.max(...Object.values(arrival));
  const first=new Map(),second=new Map(),continuations=new Map();
@@ -894,12 +895,12 @@ function timeTransfer(transfer,chain){
  if(chain.nodes.some(node=>!reached.has(node.id)))throw new Error('A target has no arrival time');
  const ordered=[...edges.values()].sort((a,b)=>a.start-b.start);
  const lastEnd=Math.max(frontEnd,...ordered.map(edge=>edge.finish));
- return {arrival,frontEnd,edges:ordered,hitAt:Object.fromEntries(reached),lastEnd,duration:lastEnd+170,
+ return {arrival,frontEnd,edges:ordered,hitAt:Object.fromEntries(reached),lastEnd,duration:lastEnd+trailMs,
   maxDepth:Math.max(1,...ordered.map(edge=>edge.depth))};
 }
 
-const trailMs=72;
-const noseMs=24;
+const trailMs=238;
+const noseMs=110;
 const hitLightMs=120;
 const zigzagStops=[0,.19,.37,.52,.71,.88,1];
 
