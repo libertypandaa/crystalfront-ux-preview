@@ -203,6 +203,26 @@ body[data-preview=ordinary] .topbar{grid-template-columns:minmax(0,1fr) minmax(8
 body[data-preview=mixChain] .topbar{grid-template-columns:minmax(0,1.63fr) minmax(0,1fr) minmax(51px,.56fr)}
 body[data-preview=motion] .topbar{grid-template-columns:minmax(0,1fr) minmax(80px,.39fr)}
 body[data-preview=bomb] .topbar{grid-template-columns:minmax(0,.78fr) minmax(55px,.53fr) minmax(0,1.27fr)}
+#settings .tuning{position:fixed;inset:auto 10px 65px;width:auto;max-width:430px;margin:auto;
+ max-height:calc(100dvh - 82px);overflow:auto;gap:8px;padding:10px;z-index:30}
+.tuning header{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:14px}
+.tuning header button{height:34px}
+#parameters{display:grid;gap:3px}
+.tune-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:0 8px;align-items:center}
+.tune-row label{font-size:12px;line-height:1.2;min-width:0}
+.tune-row output{font-size:12px;font-weight:700;color:#ffdb8b}
+.tune-row input{grid-column:1/-1;height:23px}
+.tune-note{font-size:11px;color:#c3d5e5;margin:0}
+.tune-view summary{display:block!important;height:auto!important;padding:4px 0!important;border:none!important;
+ background:none!important;color:#bfd5e9!important;text-align:left}
+.tune-view[open]{display:grid;gap:5px}
+.tune-view label{font-size:12px}
+.tune-actions{display:grid;grid-template-columns:1fr 1.15fr;gap:5px}
+.tune-actions button{height:37px;line-height:1.1;padding:3px 5px;font-size:11px}
+#copyStatus{font-size:11px;line-height:1.2;color:#ffda91}
+#copyStatus:empty{display:none}
+#copyText{width:100%;height:74px;resize:none;background:#102339;border:1px solid #52718c;color:#e9f4ff;
+ border-radius:6px;font:11px/1.25 system-ui,sans-serif;padding:5px;user-select:text}
 </style></head>
 <body><main class="shell" aria-label="Crystal Front. Варианты UX-001">
   <header class="topbar">
@@ -219,11 +239,20 @@ body[data-preview=bomb] .topbar{grid-template-columns:minmax(0,.78fr) minmax(55p
   <iframe id="shopView" title="Макет магазина Crystal Front" hidden></iframe></div></section>
   <footer class="transport">
     <div id="counts" aria-live="polite"></div><div id="motionActions" class="actions"><button id="toggle" type="button">Запуск</button><button id="rewind" type="button">Сначала</button><details id="settings"><summary>Настройки</summary>
-      <div class="options">
-        <label><input type="checkbox" id="dim"> Приглушить фон поля</label><label><input type="checkbox" id="reduce"> Без движения</label>
-        <label><input type="checkbox" id="loop"> Повторять</label>
-        <label class="scrub" for="seek">Положение в сцене<input type="range" min="0" value="0" id="seek" step="10"></label>
-      </div>
+      <div class="options tuning" aria-label="Параметры анимации">
+ <header><strong>Параметры анимации</strong><button id="closeSettings" type="button">Готово</button></header>
+ <div id="parameters"></div>
+ <p class="tune-note">Скорость также меняет темп фронта Бомбы и Линии. При 0 мс хвост гаснет сразу.</p>
+ <details class="tune-view"><summary>Просмотр</summary>
+  <label><input type="checkbox" id="dim"> Приглушить фон поля</label>
+  <label><input type="checkbox" id="reduce"> Без движения</label>
+  <label><input type="checkbox" id="loop"> Повторять</label>
+  <label class="scrub" for="seek">Положение в сцене<input type="range" min="0" value="0" id="seek" step="10"></label>
+ </details>
+ <div class="tune-actions"><button id="restoreParameters" type="button">Вернуть исходные</button><button id="copyParameters" type="button">Скопировать настройки</button></div>
+ <output id="copyStatus" role="status"></output>
+ <textarea id="copyText" aria-label="Текст настроек для копирования" readonly hidden></textarea>
+</div>
     </details></div>
     <div id="shopActions" class="actions" hidden><button id="shopReset" type="button">Сброс</button><button id="shopLow" type="button">Мало лучей</button><button id="adOutcome" type="button">Итог рекламы</button></div><div id="adResults" class="actions" hidden><button data-result="earned" type="button">Награда</button><button data-result="cancel" type="button">Отмена</button><button data-result="failed" type="button">Недоступна</button></div><div class="readout"><span id="phaseName"></span><span aria-hidden="true">·</span><output id="time" aria-label="Время"></output></div>
   </footer>
@@ -371,8 +400,34 @@ function demoRefill(cells,targets){
  return {actor:'player',matchedIds:targets,spawnedIds,cells:next};
 }
 
-const hitPauseMs=110;
-const fadeMs=230;
+const parameterSpecs={
+ speed:{label:'Скорость молнии',min:.35,max:2.5,step:.05,initial:1,unit:'×'},
+ length:{label:'Длина яркой части',min:.3,max:1.45,step:.05,initial:1,unit:'×'},
+ tail:{label:'Затухание хвоста',min:0,max:650,step:1,initial:238,unit:'мс'},
+ hold:{label:'Задержка исчезновения',min:0,max:600,step:10,initial:110,unit:'мс'},
+ fade:{label:'Длительность исчезновения',min:0,max:800,step:10,initial:230,unit:'мс'},
+};
+const parameterKey='crystal-front-ux-r11-parameters';
+function normalizeParameters(values){
+ const result={};
+ for(const [key,spec] of Object.entries(parameterSpecs)){
+  const raw=values?.[key];
+  result[key]=Number.isFinite(raw)&&raw>=spec.min&&raw<=spec.max?
+   Number((spec.min+Math.round((raw-spec.min)/spec.step)*spec.step).toFixed(2)):spec.initial;
+ }
+ return result;
+}
+function loadParameters(){
+ try{
+  const saved=JSON.parse(localStorage.getItem(parameterKey));
+  return normalizeParameters(saved?.version===1?saved.values:null);
+ }catch{return normalizeParameters(null);}
+}
+let tune=loadParameters();
+function saveParameters(){
+ try{localStorage.setItem(parameterKey,JSON.stringify({version:1,values:tune}));}
+ catch{ /* Parameters still work for this open preview. */ }
+}
 const mixStop=.90;
 
 function chainWindow(chain,mix){
@@ -396,11 +451,11 @@ function firstHits(plan,{motion,isColor,isMix,reduced,effectDuration,mixDuration
 function removeByCell(localHits,time,id,reduced){
  const hit=localHits?.[id];
  if(hit===undefined)return null;
- const age=time-hit-hitPauseMs;
- return reduced?(age<0?0:1):limit(age/fadeMs);
+ const age=time-hit-tune.hold;
+ return reduced||tune.fade===0?(age<0?0:1):limit(age/tune.fade);
 }
 function removalEnd(hits,effectDuration,reduced){
- return Math.max(effectDuration,Math.max(0,...Object.values(hits))+hitPauseMs+(reduced?0:fadeMs));
+ return Math.max(effectDuration,Math.max(0,...Object.values(hits))+tune.hold+(reduced?0:tune.fade));
 }
 function demoFrames(scene,size,reduced){
  const isMix=scene==='mix'||scene==='mixQuiet';
@@ -414,9 +469,9 @@ function demoFrames(scene,size,reduced){
   zone:plan.zone,roots:[...new Set(plan.starters.map(([root])=>root))]}:null;
  const motion=transfer?timeTransfer(transfer,plan):null;
  const mixDuration=reduced?440:940;
- const effectDuration=isColor?(reduced?350:460):reduced?520:motion?.duration??2*(410+170*plan.maxDepth);
+ const effectDuration=isColor?(reduced?350:460):reduced?520:motion?.duration??2*(410+170*plan.maxDepth)/tune.speed;
  const localHits=scene==='mixQuiet'?{}:firstHits(plan,{motion,isColor,isMix,reduced,effectDuration,mixDuration});
- const effectEnd=!motion&&!isColor&&!reduced?(chainWindow(plan,isMix).offset+.75)*effectDuration+trailMs:effectDuration;
+ const effectEnd=!motion&&!isColor&&!reduced?(chainWindow(plan,isMix).offset+.75)*effectDuration+tune.tail:effectDuration;
  const activeDuration=removalEnd(localHits,effectEnd,reduced);
  push('start',650);
  if(bonus){
@@ -424,7 +479,8 @@ function demoFrames(scene,size,reduced){
   state.bonuses={...state.bonuses,[bonus]:state.bonuses[bonus]-1};
   if(isMix){
    push('mix',mixDuration,{bonus,ids:mixAreaIds,aim:'3-3',routes:permutation,newCells:cells,
-    permutation:true,mixRoots:plan.roots});
+    permutation:true,mixRoots:plan.roots,localHits:reduced?undefined:
+     Object.fromEntries(plan.roots.map(id=>[id,mixDuration*mixStop]))});
   }else if(!transfer){
    push('bonus',activeDuration,{bonus,ids:plan.zone,aim:idAt(...spec.aim),targetType:spec.targetType,localHits,effectDuration});
   }
@@ -850,17 +906,18 @@ function flame(x,y,u,v,progress,alpha){
 }
 const bombNames=['Вспышки','Пламя','Ударная волна','Веер искр'];
 let bombStyleIndex=0;
-const hopMs=216;
-const crossCellMs=164;
+function hopDuration(){return 216/tune.speed;}
+function crossDuration(){return 164/tune.speed;}
 
 function timeTransfer(transfer,chain){
+ const hopMs=hopDuration(),crossCellMs=crossDuration();
  const [r,c]=coords(transfer.aim);
  const arrival={};
  for(const id of transfer.zone){
   const [y,x]=coords(id);
   const dr=Math.abs(y-r),dc=Math.abs(x-c);
   arrival[id]=transfer.bonus==='line'?(dr+dc)*crossCellMs:
-   dr+dc===0?252:dr+dc===1?576:864;
+   (dr+dc===0?252:dr+dc===1?576:864)/tune.speed;
  }
  const frontEnd=transfer.bonus==='line'?Math.max(...Object.values(arrival))+crossCellMs/2:Math.max(...Object.values(arrival));
  const first=new Map(),second=new Map(),continuations=new Map();
@@ -895,12 +952,10 @@ function timeTransfer(transfer,chain){
  if(chain.nodes.some(node=>!reached.has(node.id)))throw new Error('A target has no arrival time');
  const ordered=[...edges.values()].sort((a,b)=>a.start-b.start);
  const lastEnd=Math.max(frontEnd,...ordered.map(edge=>edge.finish));
- return {arrival,frontEnd,edges:ordered,hitAt:Object.fromEntries(reached),lastEnd,duration:lastEnd+trailMs,
+ return {arrival,frontEnd,edges:ordered,hitAt:Object.fromEntries(reached),lastEnd,duration:lastEnd+tune.tail,
   maxDepth:Math.max(1,...ordered.map(edge=>edge.depth))};
 }
 
-const trailMs=238;
-const noseMs=110;
 const hitLightMs=120;
 const zigzagStops=[0,.19,.37,.52,.71,.88,1];
 
@@ -914,13 +969,17 @@ function slicePulse(points,from,to){
  return [pointAt(from),...points.filter((_,i)=>zigzagStops[i]>from&&zigzagStops[i]<to),pointAt(to)];
 }
 function pulseBetween(x,y,u,v,age,duration,strength,time,depth,color){
+ const trailMs=tune.tail,noseMs=110*tune.length/tune.speed;
  if(age<=0||age>=duration+trailMs)return null;
- const lead=limit(age/duration),tail=limit((age-trailMs)/duration);
+ const stillMoving=age<duration;
+ const windowMs=noseMs+trailMs*(128/238);
+ const lead=limit(age/duration);
+ const afterglow=stillMoving?1:1-limit((age-duration)/trailMs);
+ const tail=windowMs===trailMs||stillMoving?limit((age-windowMs)/duration):
+  limit(1-windowMs/duration*afterglow);
  if(lead<=tail)return null;
  const points=zigzag(x,y,u,v,1,time/670,depth);
- const stillMoving=age<duration;
  const nose=stillMoving?Math.max(tail,(age-noseMs)/duration):lead;
- const afterglow=1-limit((age-duration)/trailMs);
  let trail='',arcs='';
  if(nose>tail){
   const mid=(nose+tail)/2;
@@ -961,7 +1020,7 @@ function timedSignal(frame,q,reduce){
  const palette=new Map(frame.cells.map(cell=>[cell.id,cell.crystal]));
  const mainProgress=limit(time/motion.frontEnd);
  const carrier=transfer.bonus==='line'?movingCross(frame,time,reduce):bombArt(frame,time,reduce);
- const links=reduce?[]:motion.edges.map(edge=>({...edge,duration:hopMs}));
+ const links=reduce?[]:motion.edges.map(edge=>({...edge,duration:hopDuration()}));
  return pulseLayers(frame,time,reduce,links,palette,
   '<g data-carrier="'+transfer.bonus+'" data-main-progress="'+mainProgress+'">'+carrier+'</g>',motion.maxDepth);
 }
@@ -997,6 +1056,7 @@ function pulseLayers(frame,time,reduce,links,palette,carrier,maxDepth){
 }
 function movingCross(frame,time,reduce){
  if(reduce)return '';
+ const crossCellMs=crossDuration();
  const {aim,zone}=frame.transfer,[row,col]=coords(aim),allowed=new Set(zone);
  const colors=new Map(frame.cells.map(cell=>[cell.id,cell.crystal]));
  let strokes='',arcs='';
@@ -1090,7 +1150,12 @@ function mixSignal(frame,q,reduce){
  const a=reduce?1:q;
  const rootPower=limit((a-mixStop)/(1-mixStop));
  const rim=svgRect(107,107,486,486,'#e2d0ff',.72*(frame.mixRoots.length?1:1-rootPower));
- return '<g data-carrier="mix">'+rim+frame.mixRoots.map(id=>rootPower>0?handoffRoot(id,rootPower):'').join('')+'</g>';
+ const liveRoots=frame.mixRoots.filter(id=>!isClean(frame,id,frame.t,reduce));
+ const roots=liveRoots.map(id=>rootPower>0?handoffRoot(id,rootPower):'').join('');
+ if(liveRoots.length===frame.mixRoots.length)return '<g data-carrier="mix">'+rim+roots+'</g>';
+ const live=livingMask(frame,frame.ids,frame.t,reduce);
+ return '<defs><clipPath id="mix-live">'+live+'</clipPath></defs>'+
+  '<g data-carrier="mix" clip-path="url(#mix-live)">'+rim+roots+'</g>';
 }
 function chainSignal(frame,q,reduce){
  return frame.motion?timedSignal(frame,q,reduce):ordinaryPulses(frame,q,reduce);
@@ -1128,7 +1193,7 @@ function render(f, reduce){
  const portion=f.sub?f.drawT/700:f.t/(f.effectDuration??f.dur), q=limit(portion);
  const mixing=f.permutation&&!reduce&&q<mixStop;
  const moving=mixing||['refill','shift','spawn','swap','reject'].includes(f.kind);
- const visible=f.localHits&&!reduce?f.ids.filter(id=>f.localHits[id]<=f.t):f.ids;
+ const visible=f.localHits&&f.kind!=='mix'&&!reduce?f.ids.filter(id=>f.localHits[id]<=f.t):f.ids;
  const ids=new Set(visible??[]),memory=new Set(f.memory??[]);
  const source=f.kind==='mix'&&(q>=(f.permutation?mixStop:.45)||reduce)?f.newCells:f.cells;
  const key=source.map(c=>c.crystal[0]+c.owner[0]).join('');
@@ -1147,7 +1212,7 @@ function render(f, reduce){
   el.classList.toggle('selection',hit&&['selected','replaced'].includes(f.kind));
   el.classList.toggle('pair',hit&&f.kind==='swap');
   el.classList.toggle('invalid',hit&&['invalid','reject'].includes(f.kind));
-  el.classList.toggle('current',!clean&&hit&&causal&&(!f.localHits||f.t-f.localHits[id]<hitLightMs));
+  el.classList.toggle('current',!clean&&hit&&causal&&(!f.localHits||f.kind==='mix'||f.t-f.localHits[id]<hitLightMs));
   el.classList.toggle('memory',!clean&&!hit&&memory.has(id));
   el.classList.toggle('birth',hit&&f.kind==='land'&&(q<.78||reduce));
   el.classList.toggle('ghost',moving&&!reduce&&ghosts.has(id));
@@ -1325,6 +1390,68 @@ for(const button of $('adResults').querySelectorAll('button'))button.onclick=()=
 };
 new MutationObserver(refreshShopControls).observe(document.documentElement,{attributes:true,attributeFilter:['data-shop-ad']});
 renderPicker();
+const panel=$('settings');
+const parameterInputs={};
+const valueLabel=(value,unit)=>String(value).replace('.',',')+(unit==='×'?'×':' мс');
+for(const [key,spec] of Object.entries(parameterSpecs)){
+ const input=document.createElement('input');
+ input.type='range';input.id='tune-'+key;input.min=spec.min;input.max=spec.max;input.step=spec.step;
+ const label=document.createElement('label');
+ label.htmlFor=input.id;label.textContent=spec.label;
+ const output=document.createElement('output');
+ output.id='tune-value-'+key;
+ output.htmlFor.add(input.id);
+ input.setAttribute('aria-describedby',output.id);
+ const row=document.createElement('div');
+ row.className='tune-row';
+ row.append(label,output,input);
+ $('parameters').append(row);
+ parameterInputs[key]={input,output};
+ input.addEventListener('input',()=>{
+  tune[key]=Number(input.value);
+  output.textContent=valueLabel(tune[key],spec.unit);
+  updateParameters();
+ });
+}
+function fillParameters(){
+ for(const [key,{input,output}] of Object.entries(parameterInputs)){
+  input.value=tune[key];
+  output.textContent=valueLabel(tune[key],parameterSpecs[key].unit);
+ }
+}
+function updateParameters(){
+ saveParameters();
+ $('copyStatus').textContent='';
+ $('copyText').hidden=true;
+ setup();
+}
+fillParameters();
+$('restoreParameters').onclick=()=>{
+ tune=normalizeParameters(null);
+ fillParameters();
+ updateParameters();
+};
+$('closeSettings').onclick=()=>{
+ panel.open=false;
+ panel.querySelector('summary').focus();
+};
+panel.addEventListener('toggle',()=>{if(panel.open)stop();});
+$('copyParameters').onclick=async()=>{
+ const text=['Crystal Front · параметры B-r11',...Object.entries(parameterSpecs).map(([key,spec])=>
+  spec.label+' — '+valueLabel(tune[key],spec.unit))].join('\n');
+ const field=$('copyText');
+ field.value=text;
+ try{
+  await navigator.clipboard.writeText(text);
+  field.hidden=true;
+  $('copyStatus').textContent='Настройки скопированы';
+ }catch{
+  field.hidden=false;
+  field.focus();
+  field.select();
+  $('copyStatus').textContent='Текст выделен. Скопируйте его.';
+ }
+};
 window.uxPreview={
  stage(scene,style=0,dim=false,small=null){
   if($('scene').value==='shop'){$('scene').value=scene;changeScene();}
