@@ -371,6 +371,37 @@ function demoRefill(cells,targets){
  return {actor:'player',matchedIds:targets,spawnedIds,cells:next};
 }
 
+const hitPauseMs=110;
+const fadeMs=230;
+const mixStop=.90;
+
+function chainWindow(chain,mix){
+ return {offset:mix?0:.05,step:.75/chain.maxDepth};
+}
+function firstHits(plan,{motion,isColor,isMix,reduced,effectDuration,mixDuration}){
+ const hits={};
+ if(reduced||isColor){
+  for(const id of plan.targets)hits[id]=0;
+ }else if(motion){
+  for(const id of plan.targets)hits[id]=Math.min(motion.arrival[id]??Infinity,motion.hitAt[id]?.time??Infinity);
+ }else{
+  const {offset,step}=chainWindow(plan,isMix);
+  for(const node of plan.nodes){
+   hits[node.id]=node.depth===0?(isMix?-mixDuration*(1-mixStop):0):(offset+node.depth*step)*effectDuration;
+  }
+ }
+ if(plan.targets.some(id=>!Number.isFinite(hits[id])))throw new Error('Missing first hit');
+ return hits;
+}
+function removeByCell(localHits,time,id,reduced){
+ const hit=localHits?.[id];
+ if(hit===undefined)return null;
+ const age=time-hit-hitPauseMs;
+ return reduced?(age<0?0:1):limit(age/fadeMs);
+}
+function removalEnd(hits,effectDuration,reduced){
+ return Math.max(effectDuration,Math.max(0,...Object.values(hits))+hitPauseMs+(reduced?0:fadeMs));
+}
 function demoFrames(scene,size,reduced){
  const isMix=scene==='mix'||scene==='mixQuiet';
  const isColor=scene==='color';
@@ -382,15 +413,19 @@ function demoFrames(scene,size,reduced){
  const transfer=bonus==='bomb'||bonus==='line'?{bonus,aim:idAt(...spec.aim),
   zone:plan.zone,roots:[...new Set(plan.starters.map(([root])=>root))]}:null;
  const motion=transfer?timeTransfer(transfer,plan):null;
+ const mixDuration=reduced?440:940;
+ const effectDuration=isColor?(reduced?350:460):reduced?520:motion?.duration??410+170*plan.maxDepth;
+ const localHits=scene==='mixQuiet'?{}:firstHits(plan,{motion,isColor,isMix,reduced,effectDuration,mixDuration});
+ const activeDuration=removalEnd(localHits,effectDuration,reduced);
  push('start',650);
  if(bonus){
   push('bonusPick',280,{bonus});
   state.bonuses={...state.bonuses,[bonus]:state.bonuses[bonus]-1};
   if(isMix){
-   push('mix',reduced?440:940,{bonus,ids:mixAreaIds,aim:'3-3',routes:permutation,newCells:cells,
+   push('mix',mixDuration,{bonus,ids:mixAreaIds,aim:'3-3',routes:permutation,newCells:cells,
     permutation:true,mixRoots:plan.roots});
   }else if(!transfer){
-   push('bonus',reduced?350:460,{bonus,ids:plan.zone,aim:idAt(...spec.aim),targetType:spec.targetType});
+   push('bonus',activeDuration,{bonus,ids:plan.zone,aim:idAt(...spec.aim),targetType:spec.targetType,localHits,effectDuration});
   }
  }else{
   const [from,to]=[spec.from,spec.to].map(([row,col])=>({row,col}));
@@ -403,9 +438,8 @@ function demoFrames(scene,size,reduced){
   return frames;
  }
  if(!isColor){
-  push('cause',reduced?520:motion?.duration??410+170*plan.maxDepth,{ids:plan.targets,chain:plan,bonus,transfer,motion,mixHandoff:isMix});
+  push('cause',activeDuration,{ids:plan.targets,chain:plan,bonus,transfer,motion,mixHandoff:isMix,localHits,effectDuration});
  }
- push('break',reduced?280:ms.break,{ids:plan.targets,scoreBefore:state.scores,delta:0,bonus});
  const refill=demoRefill(cells,plan.targets),routes=routeRefill(cells,refill);
  if(!reduced){
   push('shift',ms.shift,{routes:routes.filter(route=>!route.born),empty:plan.targets,bonus});
@@ -865,7 +899,7 @@ function timeTransfer(transfer,chain){
 }
 
 function timedSignal(frame,q,reduce){
- const {transfer,motion}=frame,elapsed=reduce?motion.lastEnd:q*frame.dur;
+ const {transfer,motion}=frame,elapsed=reduce?motion.lastEnd:q*frame.effectDuration;
  const mainProgress=limit(elapsed/motion.frontEnd);
  const alpha=1-.72*limit((elapsed-motion.frontEnd)/200);
  const {art,sources}=transfer.bonus==='line'?movingCross(frame,elapsed,alpha,reduce):bombArt(frame,elapsed,reduce);
@@ -987,7 +1021,7 @@ function bombArt(frame,time,reduce){
 }
 function mixSignal(frame,q,reduce){
  const a=reduce?1:q;
- const rootPower=limit((a-.90)/.10);
+ const rootPower=limit((a-mixStop)/(1-mixStop));
  const rim=svgRect(107,107,486,486,'#e2d0ff',.72*(frame.mixRoots.length?1:1-rootPower));
  return '<g data-carrier="mix">'+rim+frame.mixRoots.map(id=>rootPower>0?handoffRoot(id,rootPower):'').join('')+'</g>';
 }
@@ -1000,7 +1034,7 @@ function chainSignal(frame,q,reduce){
   return '<rect x="'+(x-50)+'" y="'+(y-50)+'" width="100" height="100"/>';
  }).join('');
  let gold='',arcs='';
- const step=.75/maxDepth;
+ const {offset,step}=chainWindow(frame.chain,frame.mixHandoff);
  const roots=frame.chain.roots??(zone.length?[...new Set(frame.chain.starters.map(([root])=>root))]:[frame.chain.origin]);
  for(const root of roots){
   const power=frame.transfer||frame.mixHandoff?Math.max(.55,1-q*1.2):reduce?.8:Math.max(.55,1-q*1.2);
@@ -1008,7 +1042,7 @@ function chainSignal(frame,q,reduce){
  }
  for(const [index,node] of [...nodes,...frame.chain.zoneLinks].entries()){
   if(!node.parents.length)continue;
-  const start=(frame.transfer||frame.mixHandoff?0:.05)+(node.depth-1)*step;
+  const start=offset+(node.depth-1)*step;
   const progress=reduce?1:limit((q-start)/step);
   if(progress<=0)continue;
   const settled=progress===1;
@@ -1065,13 +1099,12 @@ function signal(f,q,reduce) {
 function render(f, reduce){
  document.body.classList.toggle('reduce-ui-motion',reduce);
  board.dataset.phase=f.kind;
- const portion=f.sub?f.drawT/700:f.t/f.dur, q=limit(portion);
- const mixing=f.permutation&&!reduce&&q<.90;
+ const portion=f.sub?f.drawT/700:f.t/(f.effectDuration??f.dur), q=limit(portion);
+ const mixing=f.permutation&&!reduce&&q<mixStop;
  const moving=mixing||['refill','shift','spawn','swap','reject'].includes(f.kind);
- const visible=f.motion&&!reduce?f.ids.filter(id=>Math.min(f.motion.arrival[id]??Infinity,
-  f.motion.hitAt[id]?.time??Infinity)<=f.t):f.ids;
+ const visible=f.localHits&&!reduce?f.ids.filter(id=>f.localHits[id]<=f.t):f.ids;
  const ids=new Set(visible??[]),memory=new Set(f.memory??[]);
- const source=f.kind==='mix'&&(q>=(f.permutation?.90:.45)||reduce)?f.newCells:f.cells;
+ const source=f.kind==='mix'&&(q>=(f.permutation?mixStop:.45)||reduce)?f.newCells:f.cells;
  const key=source.map(c=>c.crystal[0]+c.owner[0]).join('');
  if(tilesKey!==key){createTiles(source);tilesKey=key;}
  const routes=f.permutation?(mixing?f.routes.filter(route=>!eq(route.from,route.to)):[]):f.routes??[];
@@ -1090,13 +1123,14 @@ function render(f, reduce){
   el.classList.toggle('memory',!hit&&memory.has(id));
   el.classList.toggle('birth',hit&&f.kind==='land'&&(q<.78||reduce));
   el.classList.toggle('ghost',moving&&!reduce&&ghosts.has(id));
-  el.classList.toggle('empty',empty.has(id)||(hit&&broken));
+  const local=removeByCell(f.localHits,f.t,id,reduce);
+  el.classList.toggle('empty',empty.has(id)||(hit&&broken)||local===1);
   let style='';
   if(!reduce&&hit&&['selected','replaced'].includes(f.kind))style='transform:translateY('+(-2*Math.sin(Math.PI*limit(f.t/160)))+'px)';
   if(!reduce&&hit&&f.kind==='mix'&&!f.permutation)style='transform:scaleX('+Math.max(.08,Math.abs(1-2*q))+');filter:brightness(1.15)';
   if(!reduce&&hit&&f.kind==='land')style='transform:scaleY('+(1-.07*Math.sin(Math.PI*limit(q*2.2)))+')';
-  if(!reduce&&hit&&f.kind==='break'){
-   const v=limit(f.t/380);
+  if(!reduce&&((local!==null&&local>0)||(hit&&f.kind==='break'))){
+   const v=local??limit(f.t/380);
    style='opacity:'+(1-v)+';transform:scale('+(1-.29*v)+')';
    const ix=(f.ids??[]).indexOf(id);
    if(ix<4&&v>.16&&v<.91){
@@ -1107,7 +1141,7 @@ function render(f, reduce){
   gem.style.cssText=style;
  }
  const movingHTML=reduce?'':routes.map(({from,to,tile,born})=>{
-   const v=ease(mixing?q/.90:q),r=from.row+(to.row-from.row)*v,c=from.col+(to.col-from.col)*v;
+   const v=ease(mixing?q/mixStop:q),r=from.row+(to.row-from.row)*v,c=from.col+(to.col-from.col)*v;
    const swap=mixing||f.kind==='swap'||f.kind==='reject';
    const arc=swap ? ((from.row<to.row||from.col<to.col)?1:-1)*Math.sin(Math.PI*v)*.085 : 0;
    const hor=from.row===to.row;
