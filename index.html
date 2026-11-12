@@ -898,65 +898,132 @@ function timeTransfer(transfer,chain){
   maxDepth:Math.max(1,...ordered.map(edge=>edge.depth))};
 }
 
-function timedSignal(frame,q,reduce){
- const {transfer,motion}=frame,elapsed=reduce?motion.lastEnd:q*frame.effectDuration;
- const mainProgress=limit(elapsed/motion.frontEnd);
- const alpha=1-.72*limit((elapsed-motion.frontEnd)/200);
- const {art,sources}=transfer.bonus==='line'?movingCross(frame,elapsed,alpha,reduce):bombArt(frame,elapsed,reduce);
- const zoneMask=cellMask(transfer.zone),chainMask=cellMask(frame.chain.targets);
- const palette=new Map(frame.cells.map(cell=>[cell.id,cell.crystal]));
- const external=new Set(frame.chain.nodes.map(node=>node.id));
- let arcs='',gold='',hits='';
- for(const [index,edge] of motion.edges.entries()){
-  const progress=limit((elapsed-edge.start)/hopMs);
-  if(progress<=0)continue;
-  const [x,y]=xy(edge.from),[u,v]=xy(edge.to);
-  const strength=1+.9*(edge.depth-1)/Math.max(1,motion.maxDepth-1);
-  const age=limit((elapsed-edge.finish)/240),opacity=.96-.20*age;
-  const points=zigzag(x,y,u,v,progress,reduce?.64:elapsed/670,edge.depth);
-  gold+='<g data-branch="'+edge.from+'>'+edge.to+'" data-progress="'+progress+'" data-start="'+edge.start+'">'+
-   goldenZigzag(points,strength,opacity)+'</g>';
-  if(!reduce)arcs+=surroundingArcs(edge.from,edge.to,progress,elapsed/670,index,chainColor[palette.get(edge.to)],.88);
+const trailMs=72;
+const noseMs=24;
+const hitLightMs=120;
+const zigzagStops=[0,.19,.37,.52,.71,.88,1];
+
+function slicePulse(points,from,to){
+ function pointAt(t){
+  const segment=Math.min(5,zigzagStops.findIndex(stop=>stop>=t)-1);
+  if(segment<0)return points[0];
+  const q=(t-zigzagStops[segment])/(zigzagStops[segment+1]-zigzagStops[segment]);
+  return points[segment].map((coordinate,i)=>lerp(coordinate,points[segment+1][i],q));
  }
- for(const id of external){
-  const {time}=motion.hitAt[id];
-  if(elapsed<time)continue;
-  const age=limit((elapsed-time)/170),[x,y]=xy(id);
-  hits+='<g data-cell="'+id+'" data-ignite="true">'+goldPoint(x,y,.95-.52*age)+'</g>';
-  if(!reduce)arcs+=sparksAt(x,y,age,0,chainColor[palette.get(id)],3);
- }
- return '<defs><clipPath id="transfer-zone">'+zoneMask+'</clipPath><clipPath id="chain-targets">'+chainMask+'</clipPath></defs>'+
-  '<g data-carrier="'+transfer.bonus+'" data-main-progress="'+mainProgress+'" clip-path="url(#transfer-zone)">'+art+sources+'</g>'+
-  '<g clip-path="url(#chain-targets)"><g data-layer="discharges">'+arcs+'</g><g data-layer="gold">'+gold+hits+'</g></g>';
+ return [pointAt(from),...points.filter((_,i)=>zigzagStops[i]>from&&zigzagStops[i]<to),pointAt(to)];
 }
-function cellMask(ids){
- return ids.map(id=>{
+function pulseBetween(x,y,u,v,age,duration,strength,time,depth,color){
+ if(age<=0||age>=duration+trailMs)return null;
+ const lead=limit(age/duration),tail=limit((age-trailMs)/duration);
+ if(lead<=tail)return null;
+ const points=zigzag(x,y,u,v,1,time/670,depth);
+ const stillMoving=age<duration;
+ const nose=stillMoving?Math.max(tail,(age-noseMs)/duration):lead;
+ const afterglow=1-limit((age-duration)/trailMs);
+ let trail='',arcs='';
+ if(nose>tail){
+  const mid=(nose+tail)/2;
+  trail=goldenZigzag(slicePulse(points,tail,mid),strength,.26*afterglow)+
+   goldenZigzag(slicePulse(points,mid,nose),strength,.58*afterglow);
+ }
+ const head=stillMoving?goldenZigzag(slicePulse(points,nose,lead),strength,.98):'';
+ if(color){
+  const vertical=x===u;
+  for(const side of [-1,1]){
+   const shift=side*(17+5*Math.sin(time/33+side));
+   const t0=tail+(lead-tail)*.22,t1=tail+(lead-tail)*.73;
+   const arc=[0,.32,.58,1].map((fraction,i)=>{
+    const t=lerp(t0,t1,fraction),offset=shift+[1,8,-6,3][i]*side;
+    return [lerp(x,u,t)+(vertical?offset:0),lerp(y,v,t)+(vertical?0:offset)];
+   });
+   arcs+=coloredStroke(arc,color,.76*afterglow);
+  }
+ }
+ return {lead,trail,head,arcs};
+}
+function isClean(frame,id,time,reduce){
+ return removeByCell(frame.localHits,time,id,reduce)===1;
+}
+function livingMask(frame,ids,time,reduce){
+ return cellMask(ids.filter(id=>!isClean(frame,id,time,reduce)));
+}
+function hitMarks(frame,time,reduce){
+ return Object.entries(frame.localHits??{}).map(([id,hit])=>{
+  const age=time-hit;
+  if(age<0||age>=hitLightMs||isClean(frame,id,time,reduce))return '';
   const [x,y]=xy(id);
-  return '<rect x="'+(x-50)+'" y="'+(y-50)+'" width="100" height="100"/>';
+  return '<g data-hit-light="'+id+'">'+goldPoint(x,y,(1-age/hitLightMs)*.86)+'</g>';
  }).join('');
 }
-function movingCross(frame,time,alpha,reduce){
- const {aim,zone,roots}=frame.transfer,{arrival,frontEnd}=frame.motion;
- const [row,col]=coords(aim),allowed=new Set(zone);
- const distance=Math.min(time,frontEnd)/crossCellMs;
+function timedSignal(frame,q,reduce){
+ const {transfer,motion}=frame,time=frame.t;
+ const palette=new Map(frame.cells.map(cell=>[cell.id,cell.crystal]));
+ const mainProgress=limit(time/motion.frontEnd);
+ const carrier=transfer.bonus==='line'?movingCross(frame,time,reduce):bombArt(frame,time,reduce);
+ const links=reduce?[]:motion.edges.map(edge=>({...edge,duration:hopMs}));
+ return pulseLayers(frame,time,reduce,links,palette,
+  '<g data-carrier="'+transfer.bonus+'" data-main-progress="'+mainProgress+'">'+carrier+'</g>',motion.maxDepth);
+}
+function ordinaryPulses(frame,q,reduce){
+ const time=frame.t,palette=new Map(frame.cells.map(cell=>[cell.id,cell.crystal]));
+ const {offset,step}=chainWindow(frame.chain,frame.mixHandoff),duration=step*frame.effectDuration;
+ const links=[];
+ if(!reduce)for(const node of frame.chain.nodes)for(const from of node.parents){
+  links.push({from,to:node.id,depth:node.depth,start:(offset+(node.depth-1)*step)*frame.effectDuration,duration});
+ }
+ const residual=frame.mixHandoff&&time<92?
+  '<g data-carrier="mix" clip-path="url(#pulse-live)">'+svgRect(107,107,486,486,'#e2d0ff',.72*(1-time/92))+'</g>':'';
+ return pulseLayers(frame,time,reduce,links,palette,residual,frame.chain.maxDepth);
+}
+function pulseLayers(frame,time,reduce,links,palette,carrier,maxDepth){
+ let gold='',arcs='';
+ for(const edge of links){
+  const [x,y]=xy(edge.from),[u,v]=xy(edge.to);
+  const pulse=pulseBetween(x,y,u,v,time-edge.start,edge.duration,
+   1+.9*(edge.depth-1)/Math.max(1,maxDepth-1),time,edge.depth,chainColor[palette.get(edge.to)]);
+  if(!pulse)continue;
+  gold+='<g data-branch="'+edge.from+'>'+edge.to+'" data-progress="'+pulse.lead+'">'+
+   '<g data-tail="" clip-path="url(#pulse-live)">'+pulse.trail+'</g>'+
+   '<g data-head="">'+pulse.head+'</g></g>';
+  arcs+=pulse.arcs;
+ }
+ const defs='<defs><clipPath id="pulse-field">'+cellMask(frame.chain.targets)+'</clipPath>'+
+  '<clipPath id="pulse-live">'+livingMask(frame,frame.chain.targets,time,reduce)+'</clipPath>'+
+  '<clipPath id="pulse-zone">'+cellMask(frame.transfer?.zone??[])+'</clipPath>'+
+  '<clipPath id="pulse-zone-live">'+livingMask(frame,frame.transfer?.zone??[],time,reduce)+'</clipPath></defs>';
+ return defs+carrier+'<g clip-path="url(#pulse-field)"><g data-layer="discharges" clip-path="url(#pulse-live)">'+arcs+'</g>'+
+  '<g data-layer="gold">'+gold+'</g><g clip-path="url(#pulse-live)">'+hitMarks(frame,time,reduce)+'</g></g>';
+}
+function movingCross(frame,time,reduce){
+ if(reduce)return '';
+ const {aim,zone}=frame.transfer,[row,col]=coords(aim),allowed=new Set(zone);
  const colors=new Map(frame.cells.map(cell=>[cell.id,cell.crystal]));
  let strokes='',arcs='';
  for(const [dr,dc] of directions){
   let r=row,c=col;
   for(let i=0;i<8;i++){
    const from=idAt(r,c),to=idAt(r+dr,c+dc),outside=!allowed.has(to);
-   const progress=limit((distance-i)/(outside?.5:1));
-   if(progress<=0)break;
    const [x,y]=xy(from),u=x+dc*(outside?50:100),v=y+dr*(outside?50:100);
-   strokes+='<g data-cross-edge="'+from+'>'+(outside?'край':to)+'" data-progress="'+progress+'">'+
-    goldenZigzag(zigzag(x,y,u,v,progress,reduce?.64:time/670,i+1),1+.60*i/(frontEnd/crossCellMs),alpha)+'</g>';
-   if(!outside&&!reduce)arcs+=surroundingArcs(from,to,progress,time/670,i,chainColor[colors.get(to)],.83*alpha);
+   const pulse=pulseBetween(x,y,u,v,time-i*crossCellMs,outside?crossCellMs/2:crossCellMs,
+    1+.60*i/(frame.motion.frontEnd/crossCellMs),time,i+1,chainColor[colors.get(to)]);
+   if(pulse){
+    strokes+='<g data-cross-edge="'+from+'>'+(outside?'край':to)+'" data-progress="'+pulse.lead+'">'+
+     '<g data-tail="" clip-path="url(#pulse-zone-live)">'+pulse.trail+'</g>'+
+     '<g data-head="">'+pulse.head+'</g></g>';
+    arcs+=pulse.arcs;
+   }
    if(outside)break;
    r+=dr;c+=dc;
   }
  }
- const sources=roots.filter(id=>time>=arrival[id]).map(id=>handoffRoot(id,.64+.36*(1-limit((time-arrival[id])/220)))).join('');
- return {art:'<g data-layer="cross-discharges">'+arcs+'</g><g data-layer="cross-gold">'+strokes+'</g>',sources};
+ return '<g clip-path="url(#pulse-zone)"><g data-layer="cross-gold">'+strokes+'</g>'+
+  '<g data-layer="cross-discharges" clip-path="url(#pulse-zone-live)">'+arcs+'</g></g>';
+}
+function cellMask(ids){
+ return ids.map(id=>{
+  const [x,y]=xy(id);
+  return '<rect x="'+(x-50)+'" y="'+(y-50)+'" width="100" height="100"/>';
+ }).join('');
 }
 function along(x,y,u,v,t,offset){
  const dx=u-x,dy=v-y,length=Math.hypot(dx,dy)||1;
@@ -1007,8 +1074,8 @@ function bombArt(frame,time,reduce){
    else stroke=sparkFan(x,y,u,v,progress,index);
    art+='<g data-front-to="'+id+'" data-progress="'+progress+'">'+stroke+'</g>';
   }
-  if(age<0)continue;
-  const a=limit(age/170),glow=.18+.82*(1-a);
+  if(age<0||age>=170||isClean(frame,id,time,reduce))continue;
+  const a=limit(age/170),glow=1-a;
   let impact='';
   if(bombStyleIndex===0)impact=flare(u,v,32+13*a,'#ffa653',.75*glow)+flare(u,v,19+8*a,'#fff0bb',.92*glow);
   else if(bombStyleIndex===1)impact=flare(u,v,23+13*a,'#ff8b40',.62*glow)+flare(u,v,12+4*a,'#ffdd83',.85*glow);
@@ -1016,8 +1083,7 @@ function bombArt(frame,time,reduce){
   else for(const [dr,dc] of directions)impact+=flare(u+dc*(12+17*a),v+dr*(12+17*a),8+5*(1-a),'#ffd78d',.88*glow);
   art+='<g data-impact="'+id+'">'+impact+'</g>';
  }
- const sources=roots.filter(id=>time>=arrival[id]).map(id=>handoffRoot(id,.64+.36*(1-limit((time-arrival[id])/220)))).join('');
- return {art:'<g data-bomb-style="'+bombStyleIndex+'">'+art+'</g>',sources};
+ return '<g data-bomb-style="'+bombStyleIndex+'" clip-path="url(#pulse-zone-live)">'+art+'</g>';
 }
 function mixSignal(frame,q,reduce){
  const a=reduce?1:q;
@@ -1026,50 +1092,7 @@ function mixSignal(frame,q,reduce){
  return '<g data-carrier="mix">'+rim+frame.mixRoots.map(id=>rootPower>0?handoffRoot(id,rootPower):'').join('')+'</g>';
 }
 function chainSignal(frame,q,reduce){
- if(frame.motion)return timedSignal(frame,q,reduce);
- const {zone,nodes,targets,maxDepth}=frame.chain;
- const type=Object.fromEntries(frame.cells.map(cell=>[cell.id,cell.crystal]));
- const mask=targets.map(id=>{
-  const [x,y]=xy(id);
-  return '<rect x="'+(x-50)+'" y="'+(y-50)+'" width="100" height="100"/>';
- }).join('');
- let gold='',arcs='';
- const {offset,step}=chainWindow(frame.chain,frame.mixHandoff);
- const roots=frame.chain.roots??(zone.length?[...new Set(frame.chain.starters.map(([root])=>root))]:[frame.chain.origin]);
- for(const root of roots){
-  const power=frame.transfer||frame.mixHandoff?Math.max(.55,1-q*1.2):reduce?.8:Math.max(.55,1-q*1.2);
-  gold+=handoffRoot(root,power);
- }
- for(const [index,node] of [...nodes,...frame.chain.zoneLinks].entries()){
-  if(!node.parents.length)continue;
-  const start=offset+(node.depth-1)*step;
-  const progress=reduce?1:limit((q-start)/step);
-  if(progress<=0)continue;
-  const settled=progress===1;
-  const age=reduce?1:limit((q-start-step)/.17);
-  const strength=1+.9*(node.depth-1)/Math.max(1,maxDepth-1);
-  const color=chainColor[type[node.id]];
-  const [x,y]=xy(node.id);
-  let paths='';
-  for(const parent of node.parents){
-   const [u,v]=xy(parent);
-   const points=zigzag(u,v,x,y,progress,reduce?.64:q,node.depth);
-   paths+=goldenZigzag(points,strength,.96-.20*age);
-   if(!reduce)arcs+=surroundingArcs(parent,node.id,progress,q,index,color,Math.min(1,.72+.08*node.depth));
-  }
-  if(settled&&!node.zoneLink){
-   paths+=goldPoint(x,y,Math.min(1,(.93-age*.51)*strength));
-   if(!reduce)arcs+=sparksAt(x,y,age,index,color,3);
-  }
-  const target=node.zoneLink?'data-zone-link="'+node.parents[0]+'>'+node.id+'"':'data-cell="'+node.id+'"';
-  gold+='<g '+target+' data-depth="'+node.depth+'" data-progress="'+progress+'" data-parents="'+
-   node.parents.join(',')+'"'+(settled&&!node.zoneLink?' data-ignite="true"':'')+'>'+paths+'</g>';
- }
- const fade=limit(q/.25);
- const residual=frame.mixHandoff&&fade<1?
-  '<g data-carrier="mix">'+svgRect(107,107,486,486,'#e2d0ff',.72*(1-fade))+'</g>':'';
- return residual+'<defs><clipPath id="chain-targets">'+mask+'</clipPath></defs><g clip-path="url(#chain-targets)" data-origins="'+
-  roots.join(',')+'"><g data-layer="discharges">'+arcs+'</g><g data-layer="gold">'+gold+'</g></g>';
+ return frame.motion?timedSignal(frame,q,reduce):ordinaryPulses(frame,q,reduce);
 }
 
 function nearestTarget(ids,anchor){return [...ids].sort((a,b)=>(anchor?gridDistance(a,anchor)-gridDistance(b,anchor):0)||idOrder(a,b))[0];}
@@ -1087,10 +1110,12 @@ function signal(f,q,reduce) {
    s+=svgRect(c0*100+7,r0*100+7,(c1-c0+1)*100-14,(r1-r0+1)*100-14,'#e2d0ff',.8);
   }
   if(f.bonus==='color')for(const id of ids) {
+   const alpha=1-(removeByCell(f.localHits,f.t,id,reduce)??0);
+   if(alpha<=0)continue;
    const [cx,cy]=xy(id),r=reduce?26:16+24*ease(q);
    const hue=ink[f.targetType]??'#d7b9ff';
    const poly=[cx,cy-r,cx+r*.78,cy,cx,cy+r,cx-r*.78,cy].join(' ');
-   s+='<polygon points="'+poly+'" stroke="'+hue+'" stroke-width="13" fill="none" opacity=".63"/><polygon points="'+poly+'" stroke="#fff7f0" stroke-width="4" fill="none" opacity=".87"/>';
+   s+='<polygon points="'+poly+'" stroke="'+hue+'" stroke-width="13" fill="none" opacity="'+(.63*alpha)+'"/><polygon points="'+poly+'" stroke="#fff7f0" stroke-width="4" fill="none" opacity="'+(.87*alpha)+'"/>';
   }
   return targetLayer(s);
  }
@@ -1115,21 +1140,22 @@ function render(f, reduce){
  let fragments='';
  for(const {el,gem,id} of cells){
   const hit=ids.has(id),causal=['cause','wave','bonus','mix'].includes(f.kind);
-  el.classList.toggle('dim', $('dim').checked&&!hit&&!memory.has(id)&&(causal||f.kind==='swap'));
+  const local=removeByCell(f.localHits,f.t,id,reduce);
+  const clean=empty.has(id)||local===1;
+  el.classList.toggle('dim', !clean&&$('dim').checked&&!hit&&!memory.has(id)&&(causal||f.kind==='swap'));
   el.classList.toggle('selection',hit&&['selected','replaced'].includes(f.kind));
   el.classList.toggle('pair',hit&&f.kind==='swap');
   el.classList.toggle('invalid',hit&&['invalid','reject'].includes(f.kind));
-  el.classList.toggle('current',hit&&causal);
-  el.classList.toggle('memory',!hit&&memory.has(id));
+  el.classList.toggle('current',!clean&&hit&&causal&&(!f.localHits||f.t-f.localHits[id]<hitLightMs));
+  el.classList.toggle('memory',!clean&&!hit&&memory.has(id));
   el.classList.toggle('birth',hit&&f.kind==='land'&&(q<.78||reduce));
   el.classList.toggle('ghost',moving&&!reduce&&ghosts.has(id));
-  const local=removeByCell(f.localHits,f.t,id,reduce);
-  el.classList.toggle('empty',empty.has(id)||(hit&&broken)||local===1);
+  el.classList.toggle('empty',clean||(hit&&broken));
   let style='';
   if(!reduce&&hit&&['selected','replaced'].includes(f.kind))style='transform:translateY('+(-2*Math.sin(Math.PI*limit(f.t/160)))+'px)';
   if(!reduce&&hit&&f.kind==='mix'&&!f.permutation)style='transform:scaleX('+Math.max(.08,Math.abs(1-2*q))+');filter:brightness(1.15)';
   if(!reduce&&hit&&f.kind==='land')style='transform:scaleY('+(1-.07*Math.sin(Math.PI*limit(q*2.2)))+')';
-  if(!reduce&&((local!==null&&local>0)||(hit&&f.kind==='break'))){
+  if(!reduce&&((local!==null&&local>0&&local<1)||(hit&&f.kind==='break'))){
    const v=local??limit(f.t/380);
    style='opacity:'+(1-v)+';transform:scale('+(1-.29*v)+')';
    const ix=(f.ids??[]).indexOf(id);
